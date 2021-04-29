@@ -741,7 +741,8 @@ CHI specification as “Table 13-4 Stop/Stop to Run/Run state paths”.
 | .. image:: media/image2.png                                          |
 |    :width: 6.32in                                                    |
 |    :height: 5.12in                                                   |
-|                                                                      |
++----------------------------------------------------------------------+
++----------------------------------------------------------------------+
 |                                                                      |
 | .. image:: media/image5.png                                          |
 |    :width: 4.74in                                                    |
