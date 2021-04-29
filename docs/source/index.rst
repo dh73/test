@@ -1054,9 +1054,9 @@ Final Remarks
 -  In this app note, all the assertions are **inlined**. In a future application note the assertions will be attached to a module using a **bind** SystemVerilog construct.
 
 Special thanks to the notes pointed out by the [R]eviewers/[C]ontributors:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team.
+
+Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team [R].
 
 .. [1]
    A vacuous pass means that the property does not check the intended
@@ -1101,50 +1101,50 @@ Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team.
    absolutely necessary.
 
 .. |image1| image:: media/image6.png
-   :width: 6.4544in
-   :height: 2.44979in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image2| image:: media/image6.png
-   :width: 6.4544in
-   :height: 2.44979in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image3| image:: media/image4.png
-   :width: 3.89844in
-   :height: 3.26736in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image4| image:: media/image4.png
-   :width: 3.89844in
-   :height: 3.26736in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image5| image:: media/image3.png
-   :width: 3.16927in
-   :height: 3.45909in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image6| image:: media/image3.png
-   :width: 3.16927in
-   :height: 3.45909in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image7| image:: media/image7.png
-   :width: 6.19792in
-   :height: 3.92273in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image8| image:: media/image7.png
-   :width: 6.19792in
-   :height: 3.92273in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image9| image:: media/image8.png
-   :width: 5.69271in
-   :height: 5.70565in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image10| image:: media/image8.png
-   :width: 5.69271in
-   :height: 5.70565in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image11| image:: media/image1.png
-   :width: 6.35417in
-   :height: 2.41667in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
 .. |image12| image:: media/image1.png
-   :width: 6.35417in
-   :height: 2.41667in
-   :align: "center"
+   :width: 100px
+   :height: 100px
+   :scale:  50%
