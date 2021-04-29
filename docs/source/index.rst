@@ -1104,47 +1104,59 @@ Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team [
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image2| image:: media/image6.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image3| image:: media/image4.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image4| image:: media/image4.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image5| image:: media/image3.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image6| image:: media/image3.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image7| image:: media/image7.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image8| image:: media/image7.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image9| image:: media/image8.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image10| image:: media/image8.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image11| image:: media/image1.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
 .. |image12| image:: media/image1.png
    :width: 100px
    :height: 100px
    :scale:  50 %
+   :align: center
