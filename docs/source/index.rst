@@ -1103,48 +1103,48 @@ Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team.
 .. |image1| image:: media/image6.png
    :width: 6.4544in
    :height: 2.44979in
-   :align: center
+   :align: "center"
 .. |image2| image:: media/image6.png
    :width: 6.4544in
    :height: 2.44979in
-   :align: center
+   :align: "center"
 .. |image3| image:: media/image4.png
    :width: 3.89844in
    :height: 3.26736in
-   :align: center
+   :align: "center"
 .. |image4| image:: media/image4.png
    :width: 3.89844in
    :height: 3.26736in
-   :align: center
+   :align: "center"
 .. |image5| image:: media/image3.png
    :width: 3.16927in
    :height: 3.45909in
-   :align: center
+   :align: "center"
 .. |image6| image:: media/image3.png
    :width: 3.16927in
    :height: 3.45909in
-   :align: center
+   :align: "center"
 .. |image7| image:: media/image7.png
    :width: 6.19792in
    :height: 3.92273in
-   :align: center
+   :align: "center"
 .. |image8| image:: media/image7.png
    :width: 6.19792in
    :height: 3.92273in
-   :align: center
+   :align: "center"
 .. |image9| image:: media/image8.png
    :width: 5.69271in
    :height: 5.70565in
-   :align: center
+   :align: "center"
 .. |image10| image:: media/image8.png
    :width: 5.69271in
    :height: 5.70565in
-   :align: center
+   :align: "center"
 .. |image11| image:: media/image1.png
    :width: 6.35417in
    :height: 2.41667in
-   :align: center
+   :align: "center"
 .. |image12| image:: media/image1.png
    :width: 6.35417in
    :height: 2.41667in
-   :align: center
+   :align: "center"
