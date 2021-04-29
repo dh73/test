@@ -128,9 +128,11 @@ discrepancy or vacuity if assertion passses but the weak precondition is
 not reachable.
 
 +----------------------------------------------------------------------+
-| precondition_cover: cover property(antecedent);                      |
+| .. code-block:: verilog                                              |
 |                                                                      |
-| precondition_cover_delay: cover property(antecedent ##DELAY 1’b1).   |
+|    precondition_cover: cover property(antecedent);                   |
+|                                                                      |
+|    precondition_cover_delay: cover property(antecedent ##DELAY 1'b1).|
 +======================================================================+
 | Figure 1.2. Weak precondition cover expressions. The                 |
 | *precondition_cover* checks reachability of the antecedent, and the  |
@@ -147,8 +149,7 @@ implication operators can be proven non vacuously. The
 use implication operator as well as properties that use it. The
 unbounded delay ##DELAY can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
-implications. For example, the weak precondition cover of the property
-a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
+implications. For example, the weak precondition cover of the property a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
 with delay are:
 
 +----------------------------------------------------------------------+
