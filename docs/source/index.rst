@@ -160,10 +160,10 @@ with delay are:
 | Figure 1.3. Assuming default clock and reset definition, the weak    |
 | precondition cover of the expression a0. For a1, both precondition   |
 | covers show the same trace as they are logically equivalent.         |
-|                                                                      |
-| The Figure 1.4 shows a waveform diagram of these cover statements    |
-| and how they will look for this design.                              |
 +----------------------------------------------------------------------+
+
+The Figure 1.4 shows a waveform diagram of these cover statements 
+and how they will look for this design.
 
 +----------------------------------------------------------------------+
 | |image4|                                                             |
@@ -739,12 +739,12 @@ CHI specification as “Table 13-4 Stop/Stop to Run/Run state paths”.
 
 +----------------------------------------------------------------------+
 | .. image:: media/image2.png                                          |
-|    :width: 6.31771in                                                 |
-|    :height: 5.11952in                                                |
+|    :width: 6.32in                                                    |
+|    :height: 5.12in                                                   |
 |                                                                      |
 | .. image:: media/image5.png                                          |
-|    :width: 4.74078in                                                 |
-|    :height: 0.99556in                                                |
+|    :width: 4.74in                                                    |
+|    :height: 1in                                                      |
 +======================================================================+
 | Figure 4.1 Graphical description of the AMBA 5 CHI link FSM states   |
 | and relationships.                                                   |
@@ -1101,62 +1101,50 @@ Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team [
    absolutely necessary.
 
 .. |image1| image:: media/image6.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 6.4544in
+   :height: 2.44979in
    :align: middle
 .. |image2| image:: media/image6.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 6.45in
+   :height: 2.45in
    :align: middle
 .. |image3| image:: media/image4.png
    :width: 100px
    :height: 100px
-   :scale:  50 %
    :align: middle
 .. |image4| image:: media/image4.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
-   :align: middle
+   :width: 3.9in
+   :height: 3.27in
+   :align: bottom
 .. |image5| image:: media/image3.png
    :width: 100px
    :height: 100px
-   :scale:  50 %
    :align: middle
 .. |image6| image:: media/image3.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 3.17in
+   :height: 3.46in
    :align: middle
 .. |image7| image:: media/image7.png
    :width: 100px
    :height: 100px
-   :scale:  50 %
    :align: middle
 .. |image8| image:: media/image7.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 6.2in
+   :height: 3.92in
    :align: middle
 .. |image9| image:: media/image8.png
    :width: 100px
    :height: 100px
-   :scale:  50 %
    :align: middle
 .. |image10| image:: media/image8.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 5.69in
+   :height: 5.71in
    :align: middle
 .. |image11| image:: media/image1.png
    :width: 100px
    :height: 100px
-   :scale:  50 %
    :align: middle
 .. |image12| image:: media/image1.png
-   :width: 100px
-   :height: 100px
-   :scale:  50 %
+   :width: 6.35in
+   :height: 2.42in
    :align: middle
