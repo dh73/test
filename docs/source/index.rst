@@ -90,7 +90,8 @@ Vacuity is present in a design due numerous reasons, including:
 | |image2|                                                             |
 +======================================================================+
 | Figure 1.1. The restriction R1, represented as states grayed out,    |
-| will make both assert statements A1 and A2 pass vacuously, since the |
+| will make both assert statements                                     |
+| A1 and A2 pass vacuously, since the                                  |
 | precondition (state C and state D) can never be true.                |
 +----------------------------------------------------------------------+
 
