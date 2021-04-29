@@ -87,7 +87,10 @@ Vacuity is present in a design due numerous reasons, including:
    -  Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see Figure 1.1).
 
 +----------------------------------------------------------------------+
-| |image2|                                                             |
+| .. image:: media/image6.png                                          |
+|    :width: 6.45in                                                    |
+|    :height: 2.45in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 1.1. The restriction R1, represented as states grayed out,    |
 | will make both assert statements A1 and A2 pass vacuously, since the |
@@ -166,7 +169,10 @@ The Figure 1.4 shows a waveform diagram of these cover statements
 and how they will look for this design.
 
 +----------------------------------------------------------------------+
-| |image4|                                                             |
+| .. image:: media/image4.png                                          |
+|    :width: 3.9in                                                     |
+|    :height: 3.27in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 1.4. The waveform shows that *precondition_cover_h0* reaches  |
 | only the condition *s1* whereas *precondition_cover_delay_h0* adds   |
@@ -259,7 +265,10 @@ all the time, or when certain scenarios do not benefit from witnessing
 traces.
 
 +----------------------------------------------------------------------+
-| |image6|                                                             |
+| .. image:: media/image3.png                                          |
+|    :width: 3.17in                                                    |
+|    :height: 3.46in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 1.8. The witness is the assertion logic (antecedent and       |
 | consequent) converted into a cover statement, whereas the weak       |
@@ -310,7 +319,10 @@ derived:
 A flow to apply weak precondition cover or witness is shown below.
 
 +----------------------------------------------------------------------+
-| |image8|                                                             |
+| .. image:: media/image7.png                                          |
+|    :width: 6.2in                                                     |
+|    :height: 3.92in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 1.9. The Methodology flowchart. When the properties are       |
 | passing and the witness covers (or weak precondition) are            |
@@ -741,12 +753,14 @@ CHI specification as “Table 13-4 Stop/Stop to Run/Run state paths”.
 | .. image:: media/image2.png                                          |
 |    :width: 6.32in                                                    |
 |    :height: 5.12in                                                   |
+|    :align: center                                                    |
 +----------------------------------------------------------------------+
 +----------------------------------------------------------------------+
 |                                                                      |
 | .. image:: media/image5.png                                          |
 |    :width: 4.74in                                                    |
 |    :height: 1in                                                      |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 4.1 Graphical description of the AMBA 5 CHI link FSM states   |
 | and relationships.                                                   |
@@ -765,7 +779,10 @@ not shown in the document. However, it is suggested to open the file and
 analyse it while reading the next part of this appnote.
 
 +----------------------------------------------------------------------+
-| |image10|                                                            |
+| .. image:: media/image8.png                                          |
+|    :width: 5.69in                                                    |
+|    :height: 5.71in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 4.2. Block architecture view of the AMBA 5 CHI test           |
 | environment. The gray box shows the FSM implementation of module     |
@@ -968,7 +985,10 @@ The following image helps to correlate with the table of above. This
 trace is generated from the second witness we_completed_path.
 
 +----------------------------------------------------------------------+
-| |image12|                                                            |
+| .. image:: media/image1.png                                          |
+|    :width: 6.35in                                                    |
+|    :height: 2.42in                                                   |
+|    :align: center                                                    |
 +======================================================================+
 | Figure 4.7. Witness evidence of the design behavior generated by     |
 | we_completed_path.                                                   |
@@ -1101,52 +1121,3 @@ Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team [
    *liveness* resolution. Is for this reason that *liveness* properties
    may not be efficient for FPV and they should be used when is
    absolutely necessary.
-
-.. |image1| image:: media/image6.png
-   :width: 6.4544in
-   :height: 2.44979in
-   :align: middle
-.. |image2| image:: media/image6.png
-   :width: 6.45in
-   :height: 2.45in
-   :align: middle
-.. |image3| image:: media/image4.png
-   :width: 100px
-   :height: 100px
-   :align: middle
-.. |image4| image:: media/image4.png
-   :width: 3.9in
-   :height: 3.27in
-   :align: bottom
-.. |image5| image:: media/image3.png
-   :width: 100px
-   :height: 100px
-   :align: middle
-.. |image6| image:: media/image3.png
-   :width: 3.17in
-   :height: 3.46in
-   :align: middle
-.. |image7| image:: media/image7.png
-   :width: 100px
-   :height: 100px
-   :align: middle
-.. |image8| image:: media/image7.png
-   :width: 6.2in
-   :height: 3.92in
-   :align: middle
-.. |image9| image:: media/image8.png
-   :width: 100px
-   :height: 100px
-   :align: middle
-.. |image10| image:: media/image8.png
-   :width: 5.69in
-   :height: 5.71in
-   :align: middle
-.. |image11| image:: media/image1.png
-   :width: 100px
-   :height: 100px
-   :align: middle
-.. |image12| image:: media/image1.png
-   :width: 6.35in
-   :height: 2.42in
-   :align: middle
