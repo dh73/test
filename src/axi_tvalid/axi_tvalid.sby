@@ -1,0 +1,18 @@
+[tasks]
+prove
+witness
+
+[options]
+prove: mode prove
+witness: mode cover
+
+[engines]
+smtbmc
+
+[script]
+read -define FORMAL
+read -sv axi_tvalid.sv
+prep -top axi4_tvalid
+
+[files]
+axi_tvalid.sv

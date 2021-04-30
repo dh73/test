@@ -1,0 +1,24 @@
+[tasks]
+example1
+example2
+witness1
+witness2
+
+[options]
+example1: mode prove
+example2: mode prove
+witness1: mode cover
+witness2: mode cover
+
+[engines]
+smtbmc
+
+[script]
+read -formal sandbox.sv
+example1: prep -top sandbox0
+example2: prep -top sandbox1
+witness1: prep -top sandbox0
+witness2: prep -top sandbox1
+
+[files]
+sandbox.sv

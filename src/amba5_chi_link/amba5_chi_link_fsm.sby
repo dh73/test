@@ -1,0 +1,18 @@
+[tasks]
+prove
+witness
+
+[options]
+prove: mode prove
+witness: mode cover
+
+[engines]
+smtbmc
+
+[script]
+read -define FORMAL
+read -sv amba5_chi_link_fsm.sv
+prep -top test
+
+[files]
+amba5_chi_link_fsm.sv

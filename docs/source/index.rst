@@ -1,5 +1,3 @@
-.. highlight:: verilog
-
 ======================================================
 Weak precondition cover and witness for SVA properties
 ======================================================
@@ -119,6 +117,7 @@ and how to apply them.
 
 Weak Precondition Cover
 -----------------------
+.. highlight:: systemverilog
 
 The weak precondition cover statement is shown in Figure 1.2. This cover
 demonstrates that the precondition of a property can be covered, or can
@@ -450,7 +449,7 @@ property.
 | | else                          | unlock_test: assert property  |    |
 | |                               |                               |    |
 | | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
-| |                               | && !key[0]  |-> ##1 unlock);  |    |
+| |                               | && !key[0]  \|-> ##1 unlock); |    |
 | | unlock <= 1'b1;               |                               |    |
 | |                               | *s_weak: cover property       |    |
 | | end                           | (key[7] && !key[5] && key[2]  |    |
@@ -514,7 +513,7 @@ the depth is increased in magnitudes of 10 cycles.
 | |                               | depth 14 # This is clearly    |    |
 | | disable iff (!ARESETn)        | insufficient bound and the    |    |
 | |                               | witness will evidentiate this |    |
-| | TVALID & !TREADY |->          | as an unreachable statement.  |    |
+| | TVALID & !TREADY \|->         | as an unreachable statement.  |    |
 | | ##[1:16] TREADY);             |                               |    |
 | |                               | ---                           |    |
 | | *s_witness:*                  |                               |    |

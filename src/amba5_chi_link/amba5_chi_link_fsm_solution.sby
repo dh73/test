@@ -1,0 +1,22 @@
+[tasks]
+prove
+witness
+witness_banned
+
+[options]
+prove: mode prove
+witness: mode cover
+witness_banned: mode cover 
+witness_banned: expect fail
+
+[engines]
+smtbmc
+
+[script]
+witness_banned: read -define BANNED
+read -define FORMAL
+read -sv amba5_chi_link_fsm_solution.sv
+prep -top test
+
+[files]
+amba5_chi_link_fsm_solution.sv
