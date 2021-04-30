@@ -117,8 +117,6 @@ and how to apply them.
 
 Weak Precondition Cover
 -----------------------
-.. highlight:: systemverilog
-
 The weak precondition cover statement is shown in Figure 1.2. This cover
 demonstrates that the precondition of a property can be covered, or can
 evaluate to true, with the current set of constraints and the
@@ -130,9 +128,10 @@ discrepancy or vacuity if assertion passses but the weak precondition is
 not reachable.
 
 +----------------------------------------------------------------------+
-| precondition_cover: cover property(antecedent);                      |
+| .. code-block:: systemverilog                                        |
 |                                                                      |
-| precondition_cover_delay: cover property(antecedent ##DELAY 1’b1).   |
+|    precondition_cover: cover property(antecedent);                   |
+|    precondition_cover_delay: cover property(antecedent ##DELAY 1'b1);|
 +======================================================================+
 | Figure 1.2. Weak precondition cover expressions. The                 |
 | *precondition_cover* checks reachability of the antecedent, and the  |

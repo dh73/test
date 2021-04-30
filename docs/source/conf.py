@@ -12,4 +12,5 @@ html_css_files = [
 ]
 
 # code blocks style 
-#pygments_style = 'colorful'
+pygments_style = 'colorful'
+highlight_language = 'systemverilog'
