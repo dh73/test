@@ -1,3 +1,5 @@
+.. highlight:: verilog
+
 ======================================================
 Weak precondition cover and witness for SVA properties
 ======================================================
