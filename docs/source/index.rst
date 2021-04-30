@@ -1,3 +1,4 @@
+======================================================
 Weak precondition cover and witness for SVA properties
 ======================================================
 -----------------------------------------------
@@ -115,7 +116,7 @@ property. The following sections show how to use these special covers
 and how to apply them.
 
 Weak Precondition Cover
-=======================
+-----------------------
 
 The weak precondition cover statement is shown in Figure 1.2. This cover
 demonstrates that the precondition of a property can be covered, or can
@@ -128,10 +129,9 @@ discrepancy or vacuity if assertion passses but the weak precondition is
 not reachable.
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
+| precondition_cover: cover property(antecedent);                      |
 |                                                                      |
-|    precondition_cover: cover property(antecedent);                   |
-|    precondition_cover_delay: cover property(antecedent ##DELAY 1'b1).|
+| precondition_cover_delay: cover property(antecedent ##DELAY 1’b1).   |
 +======================================================================+
 | Figure 1.2. Weak precondition cover expressions. The                 |
 | *precondition_cover* checks reachability of the antecedent, and the  |
@@ -148,23 +148,25 @@ implication operators can be proven non vacuously. The
 use implication operator as well as properties that use it. The
 unbounded delay ##DELAY can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
-implications. For example, the weak precondition cover of the property a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
+implications. For example, the weak precondition cover of the property
+a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
 with delay are:
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
+| a0_precondition_cover: cover property(s1);                           |
 |                                                                      |
-|    a0_precondition_cover: cover property(s1);                        |
-|    a0_precond_cover_delay: cover property(s1 ##1 1'b1);              |
-|    a1_precondition_cover: cover property(s1);                        |
-|    a1_precond_cover_delay: cover property(s1 ##0 1'b1);              |
+| a0_precond_cover_delay: cover property(s1 ##1 1’b1);                 |
+|                                                                      |
+| a1_precondition_cover: cover property(s1);                           |
+|                                                                      |
+| a1_precond_cover_delay: cover property(s1 ##0 1’b1);                 |
 +======================================================================+
 | Figure 1.3. Assuming default clock and reset definition, the weak    |
 | precondition cover of the expression a0. For a1, both precondition   |
 | covers show the same trace as they are logically equivalent.         |
 +----------------------------------------------------------------------+
 
-The Figure 1.4 shows a waveform diagram of these cover statements
+The Figure 1.4 shows a waveform diagram of these cover statements 
 and how they will look for this design.
 
 +----------------------------------------------------------------------+
@@ -190,10 +192,9 @@ weak precondition cover of the assumption a1: assume property(en \|=>
 !o_rst) is:
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
+| precondition_cover: cover property(en);                              |
 |                                                                      |
-|    precondition_cover: cover property(en);                           |
-|    precond_cover_delay: cover property(en ##1 1'b1);                 |
+| precond_cover_delay: cover property(en ##1 1’b1);                    |
 +======================================================================+
 | Figure 1.5. Using weak precondition cover as a guidance to avoid     |
 | invalid constraints. In this example, without using the weak         |
@@ -214,7 +215,7 @@ For these cases, the witness cover can detect such problems at the price
 of adding a little complexity or computational overhead to the FPV tool.
 
 Witness Cover
-=============
+-------------
 
 The witness cover is similar to the weak precondition cover but it adds
 the consequent of the property to the cover expression. In this way,
@@ -227,9 +228,7 @@ The witness cover expression of a triggering property (using implication
 operator) is shown in Figure 1.6.
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
-|                                                                      |
-|   witness_cover: cover property(antecedent ##DELAY consequent).      |
+| witness_cover: cover property(antecedent ##DELAY consequent).        |
 +======================================================================+
 | Figure 1.6. The witness cover uses both the antecedent and           |
 | consequent to find a path in the design where both are reachable.    |
@@ -239,11 +238,11 @@ For example, the witness covers of the properties a0: property(s1 \|=>
 p1), a1: property(s1 \|-> p1) and a2: property(s1) are:
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
+| a0_witness_cover: cover property(s1 ##1 p1);                         |
 |                                                                      |
-|    a0_witness_cover: cover property(s1 ##1 p1);                      |
-|    a1_witness_cover: cover property(s1 ##0 p1);                      |
-|    a2_witness_cover: cover property(s1);                             |
+| a1_witness_cover: cover property(s1 ##0 p1);                         |
+|                                                                      |
+| a2_witness_cover: cover property(s1);                                |
 +======================================================================+
 | Figure 1.7. Assuming default clock and reset definition, the witness |
 | cover of the expression a0 and a1. Note that for a property that     |
@@ -342,31 +341,29 @@ unlock signal can never be logic 1 in an FPV run, since the restrict_val
 assumption constrains the solver to never consider values greater than
 8’h83 for the key primary input.
 
-+------------------------------------------------------------------------+
-| +---------------------------------+----------------------------------+ |
-| | .. code-block:: verilog         | .. code-block:: verilog          | |
-| |                                 |                                  | |
-| |    always_ff @(posedge clk)     |    restrict_val: assume property | |
-| |    begin                        |    (key < 8'h83);                | |
-| |                                 |                                  | |
-| |    if (!rstn) unlock <= 1'b0;   |    [...]                         | |
-| |                                 |                                  | |
-| |    else                         |    unlock_test: assert property  | |
-| |                                 |                                  | |
-| |    if (key inside {8'b1?0??1?0})|    (key[7] && !key[5] && key[2]  | |
-| |                                 |    && !key[0] |-> ##1 unlock);   | |
-| |    unlock <= 1'b1;              |                                  | |
-| |                                 |                                  | |
-| |    end                          |                                  | |
-| +---------------------------------+----------------------------------+ |
-+========================================================================+
-| Figure 1.10. In this example, for the unlock port to be asserted,      |
-| the input key minimum value should be 8’h84, but the constraint        |
-| restrict_val does not allow that value to be reached. The property     |
-| will pass vacuously because that part of the logic was never           |
-| activated. Execute **sby -f sandbox.sby example1** and the assertion   |
-| will pass.                                                             |
-+------------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| +-------------------------------+-------------------------------+    |
+| | always_ff @(posedge clk)      | restrict_val: assume property |    |
+| | begin                         | (key < 8'h83);                |    |
+| |                               |                               |    |
+| | if (!rstn) unlock <= 1'b0;    | [...]                         |    |
+| |                               |                               |    |
+| | else                          | unlock_test: assert property  |    |
+| |                               |                               |    |
+| | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
+| |                               | && !key[0] \|-> ##1 unlock);  |    |
+| | unlock <= 1'b1;               |                               |    |
+| |                               |                               |    |
+| | end                           |                               |    |
+| +-------------------------------+-------------------------------+    |
++======================================================================+
+| Figure 1.10. In this example, for the unlock port to be asserted,    |
+| the input key minimum value should be 8’h84, but the constraint      |
+| restrict_val does not allow that value to be reached. The property   |
+| will pass vacuously because that part of the logic was never         |
+| activated. Execute **sby -f sandbox.sby example1** and the assertion |
+| will pass.                                                           |
++----------------------------------------------------------------------+
 
 Another example that involves logic and connectivity issues, such as
 inverting pins or ports tied to constant values that block the testing
@@ -374,37 +371,35 @@ of some properties, can introduce errors that make properties pass
 vacuously. In Figure 1.11, a default disable statement accidentally
 prevents the delayed_reset assertion from being triggered.
 
-+-------------------------------------------------------------------------+
-| +----------------------------------+----------------------------------+ |
-| | .. code-block:: verilog          | .. code-block:: verilog          | |
-| |                                  |                                  | |
-| |    var logic [1:0] sreg;         |    // Disable the check if the   | |
-| |                                  |    design is in reset state      | |
-| |    always_ff @(posedge clk)      |                                  | |
-| |    begin                         |    *default disable iff(!rstn);* | |
-| |                                  |                                  | |
-| |    if (!rstn) sreg <= 2'h0;      |    // this can be used as well,  | |
-| |                                  |    since the reset is            | |
-| |    else sreg <= {sreg[0], 1'b1}; |    synchronous                   | |
-| |                                  |                                  | |
-| |    end                           |    default disable               | |
-| |                                  |    iff($sampled(!rstn));         | |
-| |    assign delayed_rst = sreg[1]; |                                  | |
-| |                                  |    delayed_reset: assert         | |
-| |                                  |    property                      | |
-| |                                  |                                  | |
-| |                                  |    (!rstn \|-> ##2 delayed_rst); | |
-| +----------------------------------+----------------------------------+ |
-+=========================================================================+
-| Figure 1.11. One of the most common mistakes that causes properties     |
-| to pass vacuously is when the default disable cause restricts a         |
-| variable to take the value defined in the property. In this example     |
-| all properties are disabled when the system is in reset state (or       |
-| when the rstn pin is low). But the property *delayed_reset*             |
-| mistakenly uses the restricted value to check for a condition,          |
-| making the assertion to pass vacuously. Execute **sby -f sandbox.sby    |
-| example2** and the assertion will pass.                                 |
-+-------------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| +-------------------------------+-------------------------------+    |
+| | var logic [1:0] sreg;         | // Disable the check if the   |    |
+| |                               | design is in reset state      |    |
+| | always_ff @(posedge clk)      |                               |    |
+| | begin                         | *default disable iff(!rstn);* |    |
+| |                               |                               |    |
+| | if (!rstn) sreg <= 2'h0;      | // this can be used as well,  |    |
+| |                               | since the reset is            |    |
+| | else sreg <= {sreg[0], 1'b1}; | synchronous                   |    |
+| |                               |                               |    |
+| | end                           | default disable               |    |
+| |                               | iff($sampled(!rstn));         |    |
+| | assign delayed_rst = sreg[1]; |                               |    |
+| |                               | delayed_reset: assert         |    |
+| |                               | property                      |    |
+| |                               |                               |    |
+| |                               | (!rstn \|-> ##2 delayed_rst); |    |
+| +-------------------------------+-------------------------------+    |
++======================================================================+
+| Figure 1.11. One of the most common mistakes that causes properties  |
+| to pass vacuously is when the default disable cause restricts a      |
+| variable to take the value defined in the property. In this example  |
+| all properties are disabled when the system is in reset state (or    |
+| when the rstn pin is low). But the property *delayed_reset*          |
+| mistakenly uses the restricted value to check for a condition,       |
+| making the assertion to pass vacuously. Execute **sby -f sandbox.sby |
+| example2** and the assertion will pass.                              |
++----------------------------------------------------------------------+
 
 Finally, it’s possible that the solver just hasn’t had enough cycles to
 reach a particular state needed to prove a property. For example, when
@@ -413,28 +408,26 @@ depth configured. In Figure 1.12, the BMC depth is set with a value less
 than the required to reach the expected maximum latency of an expected
 behaviour of a property.
 
-+-----------------------------------------------------------------------+
-| +-------------------------------------------+-----------------------+ |
-| | .. code-block:: verilog                   |                       | |
-| |					      |			      | |
-| |    tready_max_wait:			      | [options]	      | |
-| |					      |			      | |
-| |    assert property (@(posedge ACLK)	      | mode bmc	      | |
-| |					      |			      | |
-| |    disable iff (!ARESETn)		      | depth 14	      | |
-| |					      |			      | |
-| |    TVALID & !TREADY |-> ##[1:16] TREADY); |			      | |
-| +-------------------------------------------+-----------------------+ |
-+=======================================================================+
-| Figure 1.12. If the bound for a BMC is less than the bound needed to  |
-| reach a useful state for proving the property, it will pass and       |
-| might even leave a bug undetected. The witness cover is specially     |
-| useful when performing BMC tests, making sure the property scenario   |
-| is reachable with the current bound.                                  |
-+-----------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| ======================================= =========                    |
+| tready_max_wait:                        [options]                    |
+|                                                                      |
+| assert property (@(posedge ACLK)        mode bmc                     |
+|                                                                      |
+| disable iff (!ARESETn)                  depth 14                     |
+|                                                                      |
+| TVALID & !TREADY \|-> ##[1:16] TREADY);                              |
+| ======================================= =========                    |
++======================================================================+
+| Figure 1.12. If the bound for a BMC is less than the bound needed to |
+| reach a useful state for proving the property, it will pass and      |
+| might even leave a bug undetected. The witness cover is specially    |
+| useful when performing BMC tests, making sure the property scenario  |
+| is reachable with the current bound.                                 |
++----------------------------------------------------------------------+
 
 Application of the Methodology
-==============================
+------------------------------
 
 Reviewing the three prior examples, we can now illustrate how inserting
 weak precondition and witness covers can help ensure proper assertion
@@ -445,64 +438,60 @@ subsequently hold. Observe how the only difference between s_weak and
 s_witness is whether or not the expected consequent is part of the
 property.
 
-+-------------------------------------------------------------------------+
-| +----------------------------------+----------------------------------+ |
-| | .. code-block:: verilog          | .. code-block:: verilog          | |
-| |                                  |                                  | |
-| |    always_ff @(posedge clk)      |    restrict_val: assume property | |
-| |    begin                         |    (key < 8'h83);                | |
-| |                                  |                                  | |
-| |    if (!rstn) unlock <= 1'b0;    |    [...]                         | |
-| |                                  |                                  | |
-| |    else                          |    unlock_test: assert property  | |
-| |                                  |                                  | |
-| |    if (key inside {8'b1?0??1?0}) |    (key[7] && !key[5] && key[2]  | |
-| |                                  |    && !key[0] |-> ##1 unlock);   | |
-| |    unlock <= 1'b1;               |                                  | |
-| |                                  |    *s_weak: cover property       | |
-| |    end                           |    (key[7] && !key[5] && key[2]  | |
-| |                                  |    && !key[0]);*                 | |
-| |                                  |                                  | |
-| |                                  |    *s_witness: cover property    | |
-| |                                  |    (key[7] && !key[5] && key[2]  | |
-| |                                  |    && !key[0] ##1 unlock);*      | |
-| +----------------------------------+----------------------------------+ |
-+=========================================================================+
-| Figure 2.1. Since the restrict_val constraint introduces a bug that     |
-| causes the property to not trigger, the weak precondition s_weak and    |
-| witness s_witness will catch the error, resulting in an unreachable     |
-| status. Execute **sby -f sandbox.sby witness1** and the witness will    |
-| show an unreachable status, flagging a vacuous result.                  |
-+-------------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| +-------------------------------+-------------------------------+    |
+| | always_ff @(posedge clk)      | restrict_val: assume property |    |
+| | begin                         | (key < 8'h83);                |    |
+| |                               |                               |    |
+| | if (!rstn) unlock <= 1'b0;    | [...]                         |    |
+| |                               |                               |    |
+| | else                          | unlock_test: assert property  |    |
+| |                               |                               |    |
+| | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
+| |                               | && !key[0]  |-> ##1 unlock);  |    |
+| | unlock <= 1'b1;               |                               |    |
+| |                               | *s_weak: cover property       |    |
+| | end                           | (key[7] && !key[5] && key[2]  |    |
+| |                               | && !key[0]);*                 |    |
+| |                               |                               |    |
+| |                               | *s_witness: cover property    |    |
+| |                               | (key[7] && !key[5] && key[2]  |    |
+| |                               | && !key[0] ##1 unlock);*      |    |
+| +-------------------------------+-------------------------------+    |
++======================================================================+
+| Figure 2.1. Since the restrict_val constraint introduces a bug that  |
+| causes the property to not trigger, the weak precondition s_weak and |
+| witness s_witness will catch the error, resulting in an unreachable  |
+| status. Execute **sby -f sandbox.sby witness1** and the witness will |
+| show an unreachable status, flagging a vacuous result.               |
++----------------------------------------------------------------------+
 
 In Figure 1.11, we saw how an accidental default disable statement can
 render an otherwise reasonable assertion vacuous. In Figure 2.2, we
 detect this situation with the witness s_witness.
 
-+-------------------------------------------------------------------------+
-| +----------------------------------+----------------------------------+ |
-| | .. code-block:: verilog          | .. code-block:: verilog          | |
-| |                                  |                                  | |
-| |    var logic [1:0] sreg;         |    // Disable the check if the   | |
-| |                                  |    design is in reset state      | |
-| |    always_ff @(posedge clk)      |                                  | |
-| |    begin                         |    *default disable iff          | |
-| |                                  |    (!rstn);*                     | |
-| |    if (!rstn) sreg <= 2'h0;      |                                  | |
-| |                                  |    delayed_reset: assert         | |
-| |    else sreg <= {sreg[0], 1'b1}; |    property                      | |
-| |                                  |                                  | |
-| |    end                           |    (!rstn |-> ##2 delayed_rst);  | |
-| |                                  |                                  | |
-| |    assign delayed_rst = sreg[1]; |    *s_witness: cover property    | |
-| |                                  |    (rstn ##2 delayed_rst);*      | |
-| +----------------------------------+----------------------------------+ |
-+=========================================================================+
-| Figure 2.2. The s_witness witness will capture the problem of the       |
-| inverted reset polarity in the property. Execute **sby -f               |
-| sandbox.sby witness2** and the witness will show an unreachable         |
-| status, flagging a vacuous result.                                      |
-+-------------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| +-------------------------------+-------------------------------+    |
+| | var logic [1:0] sreg;         | // Disable the check if the   |    |
+| |                               | design is in reset state      |    |
+| | always_ff @(posedge clk)      |                               |    |
+| | begin                         | *default disable iff          |    |
+| |                               | (!rstn);*                     |    |
+| | if (!rstn) sreg <= 2'h0;      |                               |    |
+| |                               | delayed_reset: assert         |    |
+| | else sreg <= {sreg[0], 1'b1}; | property                      |    |
+| |                               |                               |    |
+| | end                           | (!rstn \|-> ##2 delayed_rst); |    |
+| |                               |                               |    |
+| | assign delayed_rst = sreg[1]; | *s_witness: cover property    |    |
+| |                               | (rstn ##2 delayed_rst);*      |    |
+| +-------------------------------+-------------------------------+    |
++======================================================================+
+| Figure 2.2. The s_witness witness will capture the problem of the    |
+| inverted reset polarity in the property. Execute **sby -f            |
+| sandbox.sby witness2** and the witness will show an unreachable      |
+| status, flagging a vacuous result.                                   |
++----------------------------------------------------------------------+
 
 For our final example, when the bound defined in the formal tool
 configuration is less than the required by a property to be checked, the
@@ -515,31 +504,29 @@ delays added by visiting possible interesting scenarios. But usually,
 the depth is increased in magnitudes of 10 cycles.
 
 +----------------------------------------------------------------------+
-| +----------------------------------+-------------------------------+ |
-| | .. code-block:: verilog          |                               | |
-| |				     |				     | |
-| |    tready_max_wait:		     | [options]		     | |
-| |				     |				     | |
-| |    assert property (@(posedge    | mode bmc			     | |
-| |    ACLK)			     |				     | |
-| |				     | depth 14 # This is clearly    | |
-| |    disable iff (!ARESETn)	     | insufficient bound and the    | |
-| |				     | witness will evidentiate this | |
-| |    TVALID & !TREADY |->	     | as an unreachable statement.  | |
-| |    ##[1:16] TREADY);	     |				     | |
-| |				     | ---			     | |
-| |    *s_witness:*		     |				     | |
-| |				     | [options]		     | |
-| |    *cover property (@(posedge    |				     | |
-| |    ACLK)*			     | mode bmc			     | |
-| |				     |				     | |
-| |    *disable iff (!ARESETn)*	     | depth 24 # Increasing the     | |
-| |				     | bound will enable the solver  | |
-| |    *TVALID & !TREADY ##[1:16]    | to reach the expected	     | |
-| |    TREADY);*		     | scenario. The witness will    | |
-| |				     | evidentiate this as a	     | |
-| |				     | reachable statement.	     | |
-| +----------------------------------+-------------------------------+ |
+| +-------------------------------+-------------------------------+    |
+| | tready_max_wait:              | [options]                     |    |
+| |                               |                               |    |
+| | assert property (@(posedge    | mode bmc                      |    |
+| | ACLK)                         |                               |    |
+| |                               | depth 14 # This is clearly    |    |
+| | disable iff (!ARESETn)        | insufficient bound and the    |    |
+| |                               | witness will evidentiate this |    |
+| | TVALID & !TREADY |->          | as an unreachable statement.  |    |
+| | ##[1:16] TREADY);             |                               |    |
+| |                               | ---                           |    |
+| | *s_witness:*                  |                               |    |
+| |                               | [options]                     |    |
+| | *cover property (@(posedge    |                               |    |
+| | ACLK)*                        | mode bmc                      |    |
+| |                               |                               |    |
+| | *disable iff (!ARESETn)*      | depth 24 # Increasing the     |    |
+| |                               | bound will enable the solver  |    |
+| | *TVALID & !TREADY ##[1:16]    | to reach the expected         |    |
+| | TREADY);*                     | scenario. The witness will    |    |
+| |                               | evidentiate this as a         |    |
+| |                               | reachable statement.          |    |
+| +-------------------------------+-------------------------------+    |
 +======================================================================+
 | Figure 2.3. If the scenario is unreachable due insufficient bound,   |
 | the s_witness cover will result in a failure.                        |
@@ -550,46 +537,63 @@ environmental issues by changing logic that the property does not
 detect, yet still passes.
 
 Case Study I - AXI4 Valid-Ready After Reset
-===========================================
+-------------------------------------------
 
 Consider the design in Figure 3.1. This is a simple AXI4 module with an
 assertion that is proving the TVALID after reset rule. This assertion
 passes even though an obvious error has been introduced.
 
 +----------------------------------------------------------------------+
-| .. code-block:: verilog                                              |
+| \`default_nettype none                                               |
 |                                                                      |
-|    `default_nettype none                                             |
-|    module axi4_tvalid                                                |
-|    (input wire ACLK,                                                 |
-|    input wire ARESETn,                                               |
-|    input wire TREADY,                                                |
-|    output logic TVALID);                                             |
+| module axi4_tvalid                                                   |
 |                                                                      |
-|    /* "A master must only begin driving TVALID                       |
-|     * at a rising ACLK edge following a rising edge                  |
-|     * at which ARESETn is asserted HIGH".                            |
-|     * Ref: 2.7.2 Reset, p2-11, Figure 2-4. */                        |
+| (input wire ACLK,                                                    |
 |                                                                      |
-|    logic first_point;                                                |
-|    always_ff @(posedge ACLK) begin                                   |
-|    if (!ARESETn) first_point <= 1'b0;                                |
-|    else first_point <= 1'b0;                                         |
-|    end                                                               |
+| input wire ARESETn,                                                  |
 |                                                                      |
-|    logic TVALID_nxt;                                                 |
-|    always_ff @(posedge ACLK) begin                                   |
-|    if (!ARESETn) TVALID <= 1'b0;                                     |
-|    else TVALID <= TVALID_nxt;                                        |
-|    end                                                               |
+| input wire TREADY,                                                   |
 |                                                                      |
-|    assign TVALID_nxt = (~first_point & TREADY);                      |
+| output logic TVALID);                                                |
 |                                                                      |
-|    `ifdef FORMAL                                                     |
-|    TVALID_condition: assert property (@(posedge ACLK) first_point |->|
-|    !TVALID_nxt);                                                     |
-|    `endif                                                            |
-|    endmodule // axi4_tvalid                                          |
+| /\* "A master must only begin driving TVALID                         |
+|                                                                      |
+| \* at a rising ACLK edge following a rising edge                     |
+|                                                                      |
+| \* at which ARESETn is asserted HIGH".                               |
+|                                                                      |
+| \* Ref: 2.7.2 Reset, p2-11, Figure 2-4. \*/                          |
+|                                                                      |
+| logic first_point;                                                   |
+|                                                                      |
+| always_ff @(posedge ACLK) begin                                      |
+|                                                                      |
+| if (!ARESETn) first_point <= 1'b0;                                   |
+|                                                                      |
+| else first_point <= 1'b0;                                            |
+|                                                                      |
+| end                                                                  |
+|                                                                      |
+| logic TVALID_nxt;                                                    |
+|                                                                      |
+| always_ff @(posedge ACLK) begin                                      |
+|                                                                      |
+| if (!ARESETn) TVALID <= 1'b0;                                        |
+|                                                                      |
+| else TVALID <= TVALID_nxt;                                           |
+|                                                                      |
+| end                                                                  |
+|                                                                      |
+| assign TVALID_nxt = (~first_point & TREADY);                         |
+|                                                                      |
+| \`ifdef FORMAL                                                       |
+|                                                                      |
+| TVALID_condition: assert property (@(posedge ACLK) first_point \|->  |
+| !TVALID_nxt);                                                        |
+|                                                                      |
+| \`endif                                                              |
+|                                                                      |
+| endmodule // axi4_tvalid                                             |
 +======================================================================+
 | Figure 3.1. Erroneous design for illustration. Note how first_point  |
 | never changes from 0, so the assertion is traduced to (0 \|->        |
@@ -739,6 +743,7 @@ be fixed.
 +----------------------------------------------------------------------+
 
 Case Study II - AMBA 5 CHI Link FSM
+-----------------------------------
 
 Consider the `AMBA 5
 CHI <https://developer.arm.com/documentation/ihi0050/c>`__ FSM shown in
@@ -898,7 +903,7 @@ following sections show how to debug the results obtained by the witness
 cover.
 
 Unreached Witness Analysis
-==========================
+--------------------------
 
 After analysing the failure of property ap_banned_output: “A property
 that ensures that the design cannot transition to a banned output (shown
@@ -928,6 +933,7 @@ the user can enable back the property.
 +----------------------------------------------------------------------+
 
 Debugging Unreached Witness
+---------------------------
 
 For the failure in the witness of the property ap_completed_path: “A
 property that ensures that the path 1 shown in table 13-4 is reached
