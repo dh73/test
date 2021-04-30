@@ -1,3 +1,4 @@
+======================================================
 Weak precondition cover and witness for SVA properties
 ======================================================
 -----------------------------------------------
@@ -115,7 +116,7 @@ property. The following sections show how to use these special covers
 and how to apply them.
 
 Weak Precondition Cover
-=======================
+-----------------------
 
 The weak precondition cover statement is shown in Figure 1.2. This cover
 demonstrates that the precondition of a property can be covered, or can
@@ -214,7 +215,7 @@ For these cases, the witness cover can detect such problems at the price
 of adding a little complexity or computational overhead to the FPV tool.
 
 Witness Cover
-=============
+-------------
 
 The witness cover is similar to the weak precondition cover but it adds
 the consequent of the property to the cover expression. In this way,
@@ -426,7 +427,7 @@ behaviour of a property.
 +----------------------------------------------------------------------+
 
 Application of the Methodology
-==============================
+------------------------------
 
 Reviewing the three prior examples, we can now illustrate how inserting
 weak precondition and witness covers can help ensure proper assertion
@@ -447,7 +448,7 @@ property.
 | | else                          | unlock_test: assert property  |    |
 | |                               |                               |    |
 | | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
-| |                               | && !key[0] \|-> ##1 unlock);  |    |
+| |                               | && !key[0]  |-> ##1 unlock);  |    |
 | | unlock <= 1'b1;               |                               |    |
 | |                               | *s_weak: cover property       |    |
 | | end                           | (key[7] && !key[5] && key[2]  |    |
@@ -511,7 +512,7 @@ the depth is increased in magnitudes of 10 cycles.
 | |                               | depth 14 # This is clearly    |    |
 | | disable iff (!ARESETn)        | insufficient bound and the    |    |
 | |                               | witness will evidentiate this |    |
-| | TVALID & !TREADY \|->         | as an unreachable statement.  |    |
+| | TVALID & !TREADY |->          | as an unreachable statement.  |    |
 | | ##[1:16] TREADY);             |                               |    |
 | |                               | ---                           |    |
 | | *s_witness:*                  |                               |    |
@@ -536,7 +537,7 @@ environmental issues by changing logic that the property does not
 detect, yet still passes.
 
 Case Study I - AXI4 Valid-Ready After Reset
-===========================================
+-------------------------------------------
 
 Consider the design in Figure 3.1. This is a simple AXI4 module with an
 assertion that is proving the TVALID after reset rule. This assertion
@@ -742,6 +743,7 @@ be fixed.
 +----------------------------------------------------------------------+
 
 Case Study II - AMBA 5 CHI Link FSM
+-----------------------------------
 
 Consider the `AMBA 5
 CHI <https://developer.arm.com/documentation/ihi0050/c>`__ FSM shown in
@@ -901,7 +903,7 @@ following sections show how to debug the results obtained by the witness
 cover.
 
 Unreached Witness Analysis
-==========================
+--------------------------
 
 After analysing the failure of property ap_banned_output: “A property
 that ensures that the design cannot transition to a banned output (shown
@@ -931,6 +933,7 @@ the user can enable back the property.
 +----------------------------------------------------------------------+
 
 Debugging Unreached Witness
+---------------------------
 
 For the failure in the witness of the property ap_completed_path: “A
 property that ensures that the path 1 shown in table 13-4 is reached
