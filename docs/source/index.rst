@@ -19,11 +19,13 @@ Am I testing what I think I’m testing? - series
 | -  How to apply that to a practical HDL code example               |
 +--------------------------------------------------------------------+
 
-**To get the source code:**
 
--  **Link to github repo** https://github.com/YosysHQ-AppNotes/AppNote-120
+.. note:: **The source code for this Application note is provided in:**
 
--  **You need Tabby CAD Suite! Ask us for an evaluation license:** https://www.yosyshq.com/contact
+     -  **Link to github repo** https://github.com/YosysHQ-AppNotes/AppNote-120
+
+     Also, **you need Tabby CAD Suite! Ask us for an evaluation license:** https://www.yosyshq.com/contact
+
 
 Abstract
 ========
@@ -284,8 +286,8 @@ Methodology
 
 The general recommendation is to use both weak precondition covers and
 witnesses in a mixed way. But, due to the nature of Tabby CAD separating
-prove and cover modes, the witness covers can be used instead, to get a
-stronger version of vacuity detection. The following section describes
+prove and cover modes, the witness covers can be used to get a
+stronger version of vacuity detection instead. The following section describes
 where and how both precondition cover and witness can be employed to
 increase confidence in FPV results.
 
@@ -343,21 +345,25 @@ unlock signal can never be logic 1 in an FPV run, since the restrict_val
 assumption constrains the solver to never consider values greater than
 8’h83 for the key primary input.
 
+.. literalinclude:: ../../src/sandbox_examples/sandbox.sv
+   :language: systemverilog
+   :linenos:
+
+
 +----------------------------------------------------------------------+
-| +-------------------------------+-------------------------------+    |
-| | always_ff @(posedge clk)      | restrict_val: assume property |    |
-| | begin                         | (key < 8'h83);                |    |
-| |                               |                               |    |
-| | if (!rstn) unlock <= 1'b0;    | [...]                         |    |
-| |                               |                               |    |
-| | else                          | unlock_test: assert property  |    |
-| |                               |                               |    |
-| | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
-| |                               | && !key[0] \|-> ##1 unlock);  |    |
-| | unlock <= 1'b1;               |                               |    |
-| |                               |                               |    |
-| | end                           |                               |    |
-| +-------------------------------+-------------------------------+    |
+| .. code-block:: systemverilog                                        |
+|                                                                      |
+|    +-------------------------------+-------------------------------+ |
+|    | always_ff @(posedge clk)       | restrict_val: assume property| |
+|    | begin                          | (key < 8'h83);               | |
+|    |   if (!rstn) unlock <= 1'b0;   | [...]                        | |
+|    |   else                         | unlock_test: assert property | |
+|    |   if (key inside {8'b1?0??1?0})| (key[7] && !key[5] && key[2] | |
+|    |     unlock <= 1'b1;            | && !key[0] |-> ##1 unlock);  | |
+|    | end                            |                              | |
+|    |                                |                              | |
+|    | end                            |                              | |
+|    +-------------------------------+-------------------------------+ |
 +======================================================================+
 | Figure 1.10. In this example, for the unlock port to be asserted,    |
 | the input key minimum value should be 8’h84, but the constraint      |
