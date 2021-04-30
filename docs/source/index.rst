@@ -153,13 +153,12 @@ a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
 with delay are:
 
 +----------------------------------------------------------------------+
-| a0_precondition_cover: cover property(s1);                           |
+| .. code-block:: systemverilog                                        |
 |                                                                      |
-| a0_precond_cover_delay: cover property(s1 ##1 1’b1);                 |
-|                                                                      |
-| a1_precondition_cover: cover property(s1);                           |
-|                                                                      |
-| a1_precond_cover_delay: cover property(s1 ##0 1’b1);                 |
+|    a0_precondition_cover: cover property(s1);                        |
+|    a0_precond_cover_delay: cover property(s1 ##1 1'b1);              |
+|    a1_precondition_cover: cover property(s1);                        |
+|    a1_precond_cover_delay: cover property(s1 ##0 1'b1);              |
 +======================================================================+
 | Figure 1.3. Assuming default clock and reset definition, the weak    |
 | precondition cover of the expression a0. For a1, both precondition   |
@@ -192,9 +191,10 @@ weak precondition cover of the assumption a1: assume property(en \|=>
 !o_rst) is:
 
 +----------------------------------------------------------------------+
-| precondition_cover: cover property(en);                              |
+| .. code-block:: systemverilog                                        |
 |                                                                      |
-| precond_cover_delay: cover property(en ##1 1’b1);                    |
+|    precondition_cover: cover property(en);                           |
+|    precond_cover_delay: cover property(en ##1 1'b1);                 |
 +======================================================================+
 | Figure 1.5. Using weak precondition cover as a guidance to avoid     |
 | invalid constraints. In this example, without using the weak         |
@@ -228,7 +228,9 @@ The witness cover expression of a triggering property (using implication
 operator) is shown in Figure 1.6.
 
 +----------------------------------------------------------------------+
-| witness_cover: cover property(antecedent ##DELAY consequent).        |
+| .. code-block:: systemverilog                                        |
+|                                                                      |
+|    witness_cover: cover property(antecedent ##DELAY consequent).     |
 +======================================================================+
 | Figure 1.6. The witness cover uses both the antecedent and           |
 | consequent to find a path in the design where both are reachable.    |
@@ -238,11 +240,11 @@ For example, the witness covers of the properties a0: property(s1 \|=>
 p1), a1: property(s1 \|-> p1) and a2: property(s1) are:
 
 +----------------------------------------------------------------------+
-| a0_witness_cover: cover property(s1 ##1 p1);                         |
+| .. code-block:: systemverilog                                        |
 |                                                                      |
-| a1_witness_cover: cover property(s1 ##0 p1);                         |
-|                                                                      |
-| a2_witness_cover: cover property(s1);                                |
+|    a0_witness_cover: cover property(s1 ##1 p1);                      |
+|    a1_witness_cover: cover property(s1 ##0 p1);                      |
+|    a2_witness_cover: cover property(s1);                             |
 +======================================================================+
 | Figure 1.7. Assuming default clock and reset definition, the witness |
 | cover of the expression a0 and a1. Note that for a property that     |
