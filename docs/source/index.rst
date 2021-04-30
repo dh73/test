@@ -131,7 +131,6 @@ not reachable.
 | .. code-block:: verilog                                              |
 |                                                                      |
 |    precondition_cover: cover property(antecedent);                   |
-|                                                                      |
 |    precondition_cover_delay: cover property(antecedent ##DELAY 1'b1).|
 +======================================================================+
 | Figure 1.2. Weak precondition cover expressions. The                 |
@@ -153,13 +152,12 @@ implications. For example, the weak precondition cover of the property a0: s1 \|
 with delay are:
 
 +----------------------------------------------------------------------+
-| a0_precondition_cover: cover property(s1);                           |
+| .. code-block:: verilog                                              |
 |                                                                      |
-| a0_precond_cover_delay: cover property(s1 ##1 1’b1);                 |
-|                                                                      |
-| a1_precondition_cover: cover property(s1);                           |
-|                                                                      |
-| a1_precond_cover_delay: cover property(s1 ##0 1’b1);                 |
+|    a0_precondition_cover: cover property(s1);                        |
+|    a0_precond_cover_delay: cover property(s1 ##1 1'b1);              |
+|    a1_precondition_cover: cover property(s1);                        |
+|    a1_precond_cover_delay: cover property(s1 ##0 1'b1);              |
 +======================================================================+
 | Figure 1.3. Assuming default clock and reset definition, the weak    |
 | precondition cover of the expression a0. For a1, both precondition   |
