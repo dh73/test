@@ -348,6 +348,7 @@ assumption constrains the solver to never consider values greater than
 .. literalinclude:: ../../src/sandbox_examples/sandbox.sv
    :language: systemverilog
    :linenos:
+   :lines: 7-11, 16-17
 
 
 +----------------------------------------------------------------------+
