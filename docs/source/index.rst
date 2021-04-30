@@ -190,9 +190,10 @@ weak precondition cover of the assumption a1: assume property(en \|=>
 !o_rst) is:
 
 +----------------------------------------------------------------------+
-| precondition_cover: cover property(en);                              |
+| .. code-block:: verilog                                              |
 |                                                                      |
-| precond_cover_delay: cover property(en ##1 1’b1);                    |
+|    precondition_cover: cover property(en);                           |
+|    precond_cover_delay: cover property(en ##1 1'b1);                 |
 +======================================================================+
 | Figure 1.5. Using weak precondition cover as a guidance to avoid     |
 | invalid constraints. In this example, without using the weak         |
@@ -226,7 +227,9 @@ The witness cover expression of a triggering property (using implication
 operator) is shown in Figure 1.6.
 
 +----------------------------------------------------------------------+
-| witness_cover: cover property(antecedent ##DELAY consequent).        |
+| .. code-block:: verilog                                              |
+|                                                                      |
+|   witness_cover: cover property(antecedent ##DELAY consequent).      |
 +======================================================================+
 | Figure 1.6. The witness cover uses both the antecedent and           |
 | consequent to find a path in the design where both are reachable.    |
@@ -236,11 +239,11 @@ For example, the witness covers of the properties a0: property(s1 \|=>
 p1), a1: property(s1 \|-> p1) and a2: property(s1) are:
 
 +----------------------------------------------------------------------+
-| a0_witness_cover: cover property(s1 ##1 p1);                         |
+| .. code-block:: verilog                                              |
 |                                                                      |
-| a1_witness_cover: cover property(s1 ##0 p1);                         |
-|                                                                      |
-| a2_witness_cover: cover property(s1);                                |
+|    a0_witness_cover: cover property(s1 ##1 p1);                      |
+|    a1_witness_cover: cover property(s1 ##0 p1);                      |
+|    a2_witness_cover: cover property(s1);                             |
 +======================================================================+
 | Figure 1.7. Assuming default clock and reset definition, the witness |
 | cover of the expression a0 and a1. Note that for a property that     |
@@ -339,29 +342,31 @@ unlock signal can never be logic 1 in an FPV run, since the restrict_val
 assumption constrains the solver to never consider values greater than
 8’h83 for the key primary input.
 
-+----------------------------------------------------------------------+
-| +-------------------------------+-------------------------------+    |
-| | always_ff @(posedge clk)      | restrict_val: assume property |    |
-| | begin                         | (key < 8'h83);                |    |
-| |                               |                               |    |
-| | if (!rstn) unlock <= 1'b0;    | [...]                         |    |
-| |                               |                               |    |
-| | else                          | unlock_test: assert property  |    |
-| |                               |                               |    |
-| | if (key inside {8'b1?0??1?0}) | (key[7] && !key[5] && key[2]  |    |
-| |                               | && !key[0] \|-> ##1 unlock);  |    |
-| | unlock <= 1'b1;               |                               |    |
-| |                               |                               |    |
-| | end                           |                               |    |
-| +-------------------------------+-------------------------------+    |
-+======================================================================+
-| Figure 1.10. In this example, for the unlock port to be asserted,    |
-| the input key minimum value should be 8’h84, but the constraint      |
-| restrict_val does not allow that value to be reached. The property   |
-| will pass vacuously because that part of the logic was never         |
-| activated. Execute **sby -f sandbox.sby example1** and the assertion |
-| will pass.                                                           |
-+----------------------------------------------------------------------+
++------------------------------------------------------------------------+
+| +---------------------------------+----------------------------------+ |
+| | .. code-block:: verilog         | .. code-block:: verilog          | |
+| |                                 |                                  | |
+| |    always_ff @(posedge clk)     |    restrict_val: assume property | |
+| |    begin                        |    (key < 8'h83);                | |
+| |                                 |                                  | |
+| |    if (!rstn) unlock <= 1'b0;   |    [...]                         | |
+| |                                 |                                  | |
+| |    else                         |    unlock_test: assert property  | |
+| |                                 |                                  | |
+| |    if (key inside {8'b1?0??1?0})|    (key[7] && !key[5] && key[2]  | |
+| |                                 |    && !key[0] \|-> ##1 unlock);  | |
+| |    unlock <= 1'b1;              |                                  | |
+| |                                 |                                  | |
+| |    end                          |                                  | |
+| +---------------------------------+----------------------------------+ |
++========================================================================+
+| Figure 1.10. In this example, for the unlock port to be asserted,      |
+| the input key minimum value should be 8’h84, but the constraint        |
+| restrict_val does not allow that value to be reached. The property     |
+| will pass vacuously because that part of the logic was never           |
+| activated. Execute **sby -f sandbox.sby example1** and the assertion   |
+| will pass.                                                             |
++------------------------------------------------------------------------+
 
 Another example that involves logic and connectivity issues, such as
 inverting pins or ports tied to constant values that block the testing

@@ -12,4 +12,4 @@ html_css_files = [
 ]
 
 # code blocks style 
-pygments_style = 'vim'
+pygments_style = 'emacs'
