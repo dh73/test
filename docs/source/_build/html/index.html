@@ -199,7 +199,7 @@ sequence concatenations used in here.</p></td>
 implication operators can be proven non vacuously. The
 <em>precondition_cover_delay</em> can be used for both properties that do not
 use implication operator as well as properties that use it. The
-unbounded delay ##DELAY can only be 1 if the property uses
+unbounded delay <code class="docutils literal notranslate"><span class="pre">##DELAY</span></code> can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
 implications. For example, the weak precondition cover of the property
 <code class="docutils literal notranslate"><span class="pre">a0:</span> <span class="pre">s1</span> <span class="pre">|=&gt;</span> <span class="pre">p1</span></code> and <code class="docutils literal notranslate"><span class="pre">a1:</span> <span class="pre">s1</span> <span class="pre">|-&gt;</span> <span class="pre">p1</span></code> in both precondition and precondition
@@ -238,9 +238,11 @@ and how they will look for this design.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Figure 1.4. The waveform shows that <em>precondition_cover_h0</em> reaches
-only the condition <em>s1</em> whereas <em>precondition_cover_delay_h0</em> adds
-an extra delay to capture the behavior at the next clock cycle.</p></td>
+<tr class="row-even"><td><p>Figure 1.4. The waveform shows that <em>a0_precondition_cover</em> reaches
+only the condition <em>s1</em> whereas <em>a0_precond_cover_delay</em> adds
+an extra delay to capture the behavior at the next clock cycle. Same
+reasoning can be applied to property <cite>a</cite> but with a difference due
+the overlapping implication operator.</p></td>
 </tr>
 </tbody>
 </table>

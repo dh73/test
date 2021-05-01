@@ -157,7 +157,7 @@ The *precondition_cover* can be used to check that properties that use
 implication operators can be proven non vacuously. The
 *precondition_cover_delay* can be used for both properties that do not
 use implication operator as well as properties that use it. The
-unbounded delay ##DELAY can only be 1 if the property uses
+unbounded delay ``##DELAY`` can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
 implications. For example, the weak precondition cover of the property
 ``a0: s1 |=> p1`` and ``a1: s1 |-> p1`` in both precondition and precondition
@@ -186,9 +186,11 @@ and how they will look for this design.
 |    :height: 3.27in                                                   |
 |    :align: center                                                    |
 +======================================================================+
-| Figure 1.4. The waveform shows that *precondition_cover_h0* reaches  |
-| only the condition *s1* whereas *precondition_cover_delay_h0* adds   |
-| an extra delay to capture the behavior at the next clock cycle.      |
+| Figure 1.4. The waveform shows that *a0_precondition_cover* reaches  |
+| only the condition *s1* whereas *a0_precond_cover_delay* adds        |
+| an extra delay to capture the behavior at the next clock cycle. Same |
+| reasoning can be applied to property `a` but with a difference due   |
+| the overlapping implication operator.                                |
 +----------------------------------------------------------------------+
 
 .. note::
