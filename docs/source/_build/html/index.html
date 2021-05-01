@@ -120,7 +120,7 @@ usually requires a good understanding of the design.</p>
 </li>
 <li><p>The design does not exhibit the triggering behavior because the design is <strong>overconstrained</strong>, or in other words, the expected behaviour is restricted.</p>
 <ul>
-<li><p>Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see Figure 1.1).</p></li>
+<li><p>Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see <strong>Figure 1.1</strong>).</p></li>
 </ul>
 </li>
 </ul>
@@ -459,7 +459,7 @@ will pass.</p></td>
 <p>Another example that involves logic and connectivity issues, such as
 inverting pins or ports tied to constant values that block the testing
 of some properties, can introduce errors that make properties pass
-vacuously. In Figure 1.11, a default disable statement accidentally
+vacuously. In <strong>Figure 1.11</strong>, a default disable statement accidentally
 prevents the delayed_reset assertion from being triggered.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -498,7 +498,7 @@ example2</strong> and the assertion will pass.</p></td>
 <p>Finally, it’s possible that the solver just hasn’t had enough cycles to
 reach a particular state needed to prove a property. For example, when
 performing a Bounded Model Check (BMC), you might not have sufficient
-depth configured. In Figure 1.12, the BMC depth is set with a value less
+depth configured. In <strong>Figure 1.12</strong>, the BMC depth is set with a value less
 than the required to reach the expected maximum latency of an expected
 behaviour of a property.</p>
 <table class="docutils align-default">
@@ -533,7 +533,7 @@ is reachable with the current bound.</p></td>
 <h4>Application of the Methodology<a class="headerlink" href="#application-of-the-methodology" title="Permalink to this headline">¶</a></h4>
 <p>Reviewing the three prior examples, we can now illustrate how inserting
 weak precondition and witness covers can help ensure proper assertion
-status. In Figure 2.1 we insert either the weak precondition s_weak or
+status. In <strong>Figure 2.1</strong> we insert either the weak precondition s_weak or
 the witness s_witness, either of which ensures SBY reaches a state where
 key &gt;= 8’h84. Additionally, s_witness ensures that unlock will
 subsequently hold. Observe how the only difference between s_weak and
@@ -567,7 +567,7 @@ show an unreachable status, flagging a vacuous result.</p></td>
 </tr>
 </tbody>
 </table>
-<p>In Figure 1.11, we saw how an accidental default disable statement can
+<p>In Figure <strong>1.11</strong>, we saw how an accidental default disable statement can
 render an otherwise reasonable assertion vacuous. In Figure 2.2, we
 detect this situation with the witness s_witness.</p>
 <table class="docutils align-default">
@@ -653,7 +653,7 @@ detect, yet still passes.</p>
 </div>
 <div class="section" id="case-study-i-axi4-valid-ready-after-reset">
 <h4>Case Study I - AXI4 Valid-Ready After Reset<a class="headerlink" href="#case-study-i-axi4-valid-ready-after-reset" title="Permalink to this headline">¶</a></h4>
-<p>Consider the design in Figure 3.1. This is a simple AXI4 module with an
+<p>Consider the design in <strong>Figure 3.1</strong>. This is a simple AXI4 module with an
 assertion that is proving the TVALID after reset rule. This assertion
 passes even though an obvious error has been introduced.</p>
 <table class="docutils align-default">
@@ -699,7 +699,7 @@ will pass.</p></td>
 </tr>
 </tbody>
 </table>
-<p>As can be seen in Figure 3.2, the result of SBY is successful, although
+<p>As can be seen in <strong>Figure 3.2</strong>, the result of SBY is successful, although
 the property is obviously incorrect.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -759,7 +759,7 @@ introduced in first_point logic.</p></td>
 </tbody>
 </table>
 <p>From this example, an SBY recipe can be derived that adds an extra task
-named <strong>witness</strong> to detect vacuous results. The Figure 3.5 shows this
+named <strong>witness</strong> to detect vacuous results. The <strong>Figure 3.5</strong> shows this
 SBY recipe.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -799,7 +799,7 @@ options in the SBY file.</p></td>
 disabled by the bug, so even though the assertion passes, the witness
 task can be launched to confirm the relevance of the assertion result.
 If the witness check results in a negative (unreachable) answer, which
-we see that it does in Figure 3.6, then there’s a problem that needs to
+we see that it does in <strong>Figure 3.6</strong>, then there’s a problem that needs to
 be fixed.</p>
 <table class="docutils align-default">
 <colgroup>
@@ -869,12 +869,12 @@ and relationships.</p></td>
 </tbody>
 </table>
 <p>The objective is to test a module that should accomplish the transition
-shown in <strong>Path 1</strong> (see Figure 4.1). To achieve this goal, two modules
+shown in <strong>Path 1</strong> (see <strong>Figure 4.1</strong>). To achieve this goal, two modules
 are provided to verify the expected path transition: A simple module
 <strong>test</strong> that drives the input Tx/Rx pairs of the module
 <strong>amba5_chi_link_fsm</strong>, a module that implements the AMBA 5 CHI link FSM
-as shown in Figure 4.1. The architectural view of this example is shown
-in Figure 4.2.</p>
+as shown in <strong>Figure 4.1</strong>. The architectural view of this example is shown
+in <strong>Figure 4.2</strong>.</p>
 <p><strong>Note:</strong> The RTL of the <strong>amba5_chi_link_fsm</strong> is large, therefore is
 not shown in the document. However, it is suggested to open the file and
 analyse it while reading the next part of this appnote.</p>
@@ -903,7 +903,7 @@ properties. This last block can be considered as an FPV checker.</p></td>
 <li><p>A property that ensures that the <strong>Path 1</strong> shown in table 13-4 is reached correctly with the current sequence of inputs provided by the <strong>test</strong> module.</p></li>
 <li><p>A property that ensures that the first transition (TxStop/RxStop -&gt; TxStop/RxAct) is correct.</p></li>
 </ol>
-<p>The Table 4.1 shows the encoding of such properties. Note how the
+<p>The <strong>Table 4.1</strong> shows the encoding of such properties. Note how the
 properties are using weak unbounded sequences (a ##[+] b).</p>
 <table class="docutils align-default">
 <colgroup>
@@ -926,7 +926,7 @@ using weak unbounded sequences.</p></td>
 </table>
 <p>Three bugs are hidden in the design, and yet the properties are passing.
 To verify and debug that problem, the following witness shown in the
-Table 4.2 are attached to the design as well:</p>
+<strong>Table 4.2</strong> are attached to the design as well:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -946,7 +946,7 @@ Table 4.2 are attached to the design as well:</p>
 </tbody>
 </table>
 <p>By running SBY in in prove mode, all properties are passing as shown in
-Figure 4.3:</p>
+<strong>Figure 4.3</strong>:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -1007,7 +1007,7 @@ amba5_chi_link_fsm.sby witness</strong> to get this result.</p></td>
 </tr>
 </tbody>
 </table>
-<p>As Figure 1.9 of Section Methodology suggests, further analysis is
+<p>As <strong>Figure 1.9</strong> of Section Methodology suggests, further analysis is
 needed to generate a conclusion and/or fix the problems in the RTL. The
 following sections show how to debug the results obtained by the witness
 cover.</p>
@@ -1016,7 +1016,7 @@ cover.</p>
 <h4>Unreached Witness Analysis<a class="headerlink" href="#unreached-witness-analysis" title="Permalink to this headline">¶</a></h4>
 <p>After analysing the failure of property ap_banned_output: “A property
 that ensures that the design cannot transition to a banned output (shown
-in red boxes in the Figure 4.2)” with the witness cover, it can be seen
+in red boxes in the <strong>Figure 4.2</strong>)” with the witness cover, it can be seen
 that a set of banned transitions are not yet implemented in the design.
 This property can be enclosed in compiler directives to disable the
 check until the logic for banned output transition is added, and then
@@ -1048,7 +1048,7 @@ finishes the implementation.</p></td>
 <div class="section" id="debugging-unreached-witness">
 <h4>Debugging Unreached Witness<a class="headerlink" href="#debugging-unreached-witness" title="Permalink to this headline">¶</a></h4>
 <p>For the failure in the witness of the property ap_completed_path: “A
-property that ensures that the path 1 shown in table 13-4 is reached
+property that ensures that the path 1 shown in <strong>Table 13-4</strong> is reached
 correctly with the current set of options”, the failure is a little more
 complicated. This witness is not reachable, and the assertion is proven,
 therefore there’s no information in this case of why this is failing.
@@ -1162,8 +1162,11 @@ why using witness can help to debug complex issues.</p>
 <col style="width: 100%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>ap_completed_path: assert property (initial_current_state |-&gt; ##4
-completed_path;</p></th>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">ap_completed_path:</span> <span class="k">assert</span> <span class="k">property</span><span class="p">(</span><span class="n">initial_current_state</span> <span class="o">|-&gt;</span> <span class="p">##</span><span class="mh">4</span>
+                                   <span class="n">completed_path</span><span class="p">;</span>
+</pre></div>
+</div>
+</th>
 </tr>
 </thead>
 <tbody>
@@ -1179,8 +1182,10 @@ solving the last problem presented by ap_completed_path witness.</p>
 <col style="width: 100%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>s3: begin {txlinkactiveack, rxlinkactivereq} = 2’b11; ns = s4; end
-// TxAct/RxRun</p></th>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>	<span class="nl">s3:</span> <span class="k">begin</span> <span class="p">{</span><span class="n">txlinkactiveack</span><span class="p">,</span> <span class="n">rxlinkactivereq</span><span class="p">}</span> <span class="o">=</span> <span class="mh">2</span><span class="mb">&#39;b11</span><span class="p">;</span> <span class="n">ns</span> <span class="o">=</span> <span class="n">s4</span><span class="p">;</span> <span class="k">end</span> <span class="c1">// TxAct/RxRun</span>
+</pre></div>
+</div>
+</th>
 </tr>
 </thead>
 <tbody>
@@ -1203,14 +1208,16 @@ vacuously.</p>
 <col style="width: 100%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>always_comb begin</p>
-<p>ns = ps;</p>
-<p>rxlinkactivereq = 1’b0;</p>
-<p>txlinkactivereq = 1’b0;</p>
-<p>txlinkactiveack = 1’b0;</p>
-<p>rxlinkactiveack = 1’b0;</p>
-<p>case (ps)</p>
-<p>s1: begin ns = s2; end //TxStop/RxStop</p>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="k">always_comb</span> <span class="k">begin</span>
+      <span class="n">ns</span> <span class="o">=</span> <span class="n">ps</span><span class="p">;</span>
+      <span class="n">rxlinkactivereq</span> <span class="o">=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="n">txlinkactivereq</span> <span class="o">=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="n">txlinkactiveack</span> <span class="o">=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="n">rxlinkactiveack</span> <span class="o">=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="k">case</span> <span class="p">(</span><span class="n">ps</span><span class="p">)</span>
+	<span class="nl">s1:</span> <span class="k">begin</span> <span class="n">ns</span> <span class="o">=</span> <span class="n">s2</span><span class="p">;</span> <span class="k">end</span> <span class="c1">//TxStop/RxStop</span>
+</pre></div>
+</div>
 </th>
 </tr>
 </thead>
@@ -1220,11 +1227,14 @@ pass vacuously.</p></td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Solutions to all problems are provided in the files
 <strong>amba5_chi_link_fsm_solution.sby</strong> and
 <strong>amba5_chi_link_fsm_solution.sv</strong>. Execute sby -f
 amba5_chi_link_fsm_solution.sby and both tasks will pass successfully
 now.</p>
+</div>
 <p>Final Remarks</p>
 <ul class="simple">
 <li><p>For future releases of Yosys HQ, the weak precondition cover extraction will be done automatically, and the witness extraction will be possible to enable by default.</p></li>

@@ -87,7 +87,7 @@ Vacuity is present in a design due numerous reasons, including:
 
 -  The design does not exhibit the triggering behavior because the design is **overconstrained**, or in other words, the expected behaviour is restricted.
 
-   -  Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see Figure 1.1).
+   -  Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see **Figure 1.1**).
 
 +----------------------------------------------------------------------+
 | .. image:: media/image6.png                                          |
@@ -364,7 +364,7 @@ assumption constrains the solver to never consider values greater than
 Another example that involves logic and connectivity issues, such as
 inverting pins or ports tied to constant values that block the testing
 of some properties, can introduce errors that make properties pass
-vacuously. In Figure 1.11, a default disable statement accidentally
+vacuously. In **Figure 1.11**, a default disable statement accidentally
 prevents the delayed_reset assertion from being triggered.
 
 +----------------------------------------------------------------------+
@@ -385,7 +385,7 @@ prevents the delayed_reset assertion from being triggered.
 Finally, it’s possible that the solver just hasn’t had enough cycles to
 reach a particular state needed to prove a property. For example, when
 performing a Bounded Model Check (BMC), you might not have sufficient
-depth configured. In Figure 1.12, the BMC depth is set with a value less
+depth configured. In **Figure 1.12**, the BMC depth is set with a value less
 than the required to reach the expected maximum latency of an expected
 behaviour of a property.
 
@@ -407,7 +407,7 @@ Application of the Methodology
 
 Reviewing the three prior examples, we can now illustrate how inserting
 weak precondition and witness covers can help ensure proper assertion
-status. In Figure 2.1 we insert either the weak precondition s_weak or
+status. In **Figure 2.1** we insert either the weak precondition s_weak or
 the witness s_witness, either of which ensures SBY reaches a state where
 key >= 8’h84. Additionally, s_witness ensures that unlock will
 subsequently hold. Observe how the only difference between s_weak and
@@ -426,7 +426,7 @@ property.
 | show an unreachable status, flagging a vacuous result.               |
 +----------------------------------------------------------------------+
 
-In Figure 1.11, we saw how an accidental default disable statement can
+In Figure **1.11**, we saw how an accidental default disable statement can
 render an otherwise reasonable assertion vacuous. In Figure 2.2, we
 detect this situation with the witness s_witness.
 
@@ -468,7 +468,7 @@ detect, yet still passes.
 Case Study I - AXI4 Valid-Ready After Reset
 -------------------------------------------
 
-Consider the design in Figure 3.1. This is a simple AXI4 module with an
+Consider the design in **Figure 3.1**. This is a simple AXI4 module with an
 assertion that is proving the TVALID after reset rule. This assertion
 passes even though an obvious error has been introduced.
 
@@ -483,7 +483,7 @@ passes even though an obvious error has been introduced.
 | will pass.                                                           |
 +----------------------------------------------------------------------+
 
-As can be seen in Figure 3.2, the result of SBY is successful, although
+As can be seen in **Figure 3.2**, the result of SBY is successful, although
 the property is obviously incorrect.
 
 +------------------------------------------------------------------------+
@@ -527,7 +527,7 @@ The following modifications are added to the design:
 +----------------------------------------------------------------------+
 
 From this example, an SBY recipe can be derived that adds an extra task
-named **witness** to detect vacuous results. The Figure 3.5 shows this
+named **witness** to detect vacuous results. The **Figure 3.5** shows this
 SBY recipe.
 
 +----------------------------------------------------------------------+
@@ -560,7 +560,7 @@ As explained before, the assertion will not trigger because it was
 disabled by the bug, so even though the assertion passes, the witness
 task can be launched to confirm the relevance of the assertion result.
 If the witness check results in a negative (unreachable) answer, which
-we see that it does in Figure 3.6, then there’s a problem that needs to
+we see that it does in **Figure 3.6**, then there’s a problem that needs to
 be fixed.
 
 +-----------------------------------------------------------------------+
@@ -621,12 +621,12 @@ CHI specification as “Table 13-4 Stop/Stop to Run/Run state paths”.
 +----------------------------------------------------------------------+
 
 The objective is to test a module that should accomplish the transition
-shown in **Path 1** (see Figure 4.1). To achieve this goal, two modules
+shown in **Path 1** (see **Figure 4.1**). To achieve this goal, two modules
 are provided to verify the expected path transition: A simple module
 **test** that drives the input Tx/Rx pairs of the module
 **amba5_chi_link_fsm**, a module that implements the AMBA 5 CHI link FSM
-as shown in Figure 4.1. The architectural view of this example is shown
-in Figure 4.2.
+as shown in **Figure 4.1**. The architectural view of this example is shown
+in **Figure 4.2**.
 
 **Note:** The RTL of the **amba5_chi_link_fsm** is large, therefore is
 not shown in the document. However, it is suggested to open the file and
@@ -654,9 +654,9 @@ The following requirements needs to hold in the design:
 
 3. A property that ensures that the first transition (TxStop/RxStop -> TxStop/RxAct) is correct.
 
-The Table 4.1 shows the encoding of such properties. Note how the
+The **Table 4.1** shows the encoding of such properties. Note how the
 properties are using weak unbounded sequences (a ##[+] b).
-	   
+
 +----------------------------------------------------------------------+
 | .. literalinclude:: ../../src/amba5_chi_link/amba5_chi_link_fsm.sv   |
 |     :language: systemverilog                                         |
@@ -668,7 +668,7 @@ properties are using weak unbounded sequences (a ##[+] b).
 
 Three bugs are hidden in the design, and yet the properties are passing.
 To verify and debug that problem, the following witness shown in the
-Table 4.2 are attached to the design as well:
+**Table 4.2** are attached to the design as well:
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ../../src/amba5_chi_link/amba5_chi_link_fsm.sv   |
@@ -679,7 +679,7 @@ Table 4.2 are attached to the design as well:
 +----------------------------------------------------------------------+
 
 By running SBY in in prove mode, all properties are passing as shown in
-Figure 4.3:
+**Figure 4.3**:
 
 +------------------------------------------------------------------------+
 | .. code-block::                                                        |
@@ -726,7 +726,7 @@ problems:
 | amba5_chi_link_fsm.sby witness** to get this result.                 |
 +----------------------------------------------------------------------+
 
-As Figure 1.9 of Section Methodology suggests, further analysis is
+As **Figure 1.9** of Section Methodology suggests, further analysis is
 needed to generate a conclusion and/or fix the problems in the RTL. The
 following sections show how to debug the results obtained by the witness
 cover.
@@ -736,7 +736,7 @@ Unreached Witness Analysis
 
 After analysing the failure of property ap_banned_output: “A property
 that ensures that the design cannot transition to a banned output (shown
-in red boxes in the Figure 4.2)” with the witness cover, it can be seen
+in red boxes in the **Figure 4.2**)” with the witness cover, it can be seen
 that a set of banned transitions are not yet implemented in the design.
 This property can be enclosed in compiler directives to disable the
 check until the logic for banned output transition is added, and then
@@ -756,7 +756,7 @@ Debugging Unreached Witness
 ---------------------------
 
 For the failure in the witness of the property ap_completed_path: “A
-property that ensures that the path 1 shown in table 13-4 is reached
+property that ensures that the path 1 shown in **Table 13-4** is reached
 correctly with the current set of options”, the failure is a little more
 complicated. This witness is not reachable, and the assertion is proven,
 therefore there’s no information in this case of why this is failing.
@@ -839,8 +839,10 @@ unbounded version as done with we_completed_path. This is an example of
 why using witness can help to debug complex issues.
 
 +----------------------------------------------------------------------+
-| ap_completed_path: assert property (initial_current_state \|-> ##4   |
-| completed_path;                                                      |
+| .. code-block:: systemverilog                                        |
+|                                                                      |
+|    ap_completed_path: assert property(initial_current_state |-> ##4  |
+|                                       completed_path;                |
 +======================================================================+
 | Figure 4.8. Refining the delay of the behavior needed for a          |
 | property, to replace an unbounded sequence.                          |
@@ -849,13 +851,14 @@ why using witness can help to debug complex issues.
 To fix this, the following modification to **s3** is needed, along with
 solving the last problem presented by ap_completed_path witness.
 
-+----------------------------------------------------------------------+
-| s3: begin {txlinkactiveack, rxlinkactivereq} = 2'b11; ns = s4; end   |
-| // TxAct/RxRun                                                       |
-+======================================================================+
-| Figure 4.9. Part of the fix of this issue, there is still one        |
-| problem to fix.                                                      |
-+----------------------------------------------------------------------+
++----------------------------------------------------------------------------+
+| .. literalinclude:: ../../src/amba5_chi_link/amba5_chi_link_fsm_solution.sv|
+|     :language: systemverilog                                               |
+|     :lines: 152                                                            |
++============================================================================+
+| Figure 4.9. Part of the fix of this issue, there is still one              |
+| problem to fix.                                                            |
++----------------------------------------------------------------------------+
 
 For the unreached witness of ap_completed_path: “A property that ensures
 that the first transition (TxStop/RxStop -> TxStop/RxAct) is correct”,
@@ -867,32 +870,21 @@ the precondition of the property is equivalent to *initial_current_state
 && (1’b0 \|\| 1’b0),* which evaluates to 0, making this property pass
 vacuously.
 
-+----------------------------------------------------------------------+
-| always_comb begin                                                    |
-|                                                                      |
-| ns = ps;                                                             |
-|                                                                      |
-| rxlinkactivereq = 1'b0;                                              |
-|                                                                      |
-| txlinkactivereq = 1'b0;                                              |
-|                                                                      |
-| txlinkactiveack = 1'b0;                                              |
-|                                                                      |
-| rxlinkactiveack = 1'b0;                                              |
-|                                                                      |
-| case (ps)                                                            |
-|                                                                      |
-| s1: begin ns = s2; end //TxStop/RxStop                               |
-+======================================================================+
-| Figure 4.9. A problem in the **test** module that makes a property   |
-| pass vacuously.                                                      |
-+----------------------------------------------------------------------+
++-------------------------------------------------------------------+
+| .. literalinclude:: ../../src/amba5_chi_link/amba5_chi_link_fsm.sv|
+|     :language: systemverilog                                      |
+|     :lines: 141-148                                               |
++===================================================================+
+| Figure 4.9. A problem in the **test** module that makes a property|
+| pass vacuously.                                                   |
++-------------------------------------------------------------------+
 
-Solutions to all problems are provided in the files
-**amba5_chi_link_fsm_solution.sby** and
-**amba5_chi_link_fsm_solution.sv**. Execute sby -f
-amba5_chi_link_fsm_solution.sby and both tasks will pass successfully
-now.
+.. note::
+   Solutions to all problems are provided in the files
+   **amba5_chi_link_fsm_solution.sby** and
+   **amba5_chi_link_fsm_solution.sv**. Execute sby -f
+   amba5_chi_link_fsm_solution.sby and both tasks will pass successfully
+   now.
 
 Final Remarks
 
