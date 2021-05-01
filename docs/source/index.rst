@@ -43,16 +43,25 @@ checked) and a consequence (the condition that must hold for all
 possible paths in the design). When the precondition is not triggered
 for any reason, the assertion will pass vacuously [1]_.
 
-This application note presents a methodology that uses two special cover
-expressions, known as **weak precondition** and **witness** covers, that
-can help to detect and debug false positives due vacuous results, as
-well as a method to extract an evidence of a proven property in a form
-of a waveform. First, we present scenarios where weak precondition
-covers and witnesses can be employed to identify problems in the
-**Formal Property Verification** (FPV) environment, and then we finalise
-by showcasing some more difficult sequences using AMBA 5 CHI Link FSM
-example and how this methodology helps to detect properties that are
-passing successfully but are not sound.
+Organisation
+============
+
+**Introduction:** The definition of weak precondition cover and witness
+is described. This section shows some examples where problems such as
+vacuity can lead to erroneous conclusions by the design or verification
+engineer. Also this section presents a method to extract an evidence of
+a proven property in a form of a waveform. This section is mostly
+theoretical and explains in detail the rationale behind these special
+covers.
+
+**Methodology**: This section delves into the practical application of
+the weak precondition cover and witness constructs, applied in two main
+case studies using a *valid-ready AXI4 faulty design* to trivially
+exemplify the application of both covers, and a more advanced design that
+uses an abstract implementation of the *AMBA AXI5 CHI Link FSM* which shows
+more interesting scenarios not covered by the set of assertions. This section
+ends with a guide that shows how to debug unreached witness covers.
+Section *Methodology* is more hands-on-work.
 
 Introduction
 ============

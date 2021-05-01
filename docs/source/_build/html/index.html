@@ -78,16 +78,24 @@ a precondition (an expression that specifies when a property should be
 checked) and a consequence (the condition that must hold for all
 possible paths in the design). When the precondition is not triggered
 for any reason, the assertion will pass vacuously <a class="footnote-reference brackets" href="#id6" id="id1">1</a>.</p>
-<p>This application note presents a methodology that uses two special cover
-expressions, known as <strong>weak precondition</strong> and <strong>witness</strong> covers, that
-can help to detect and debug false positives due vacuous results, as
-well as a method to extract an evidence of a proven property in a form
-of a waveform. First, we present scenarios where weak precondition
-covers and witnesses can be employed to identify problems in the
-<strong>Formal Property Verification</strong> (FPV) environment, and then we finalise
-by showcasing some more difficult sequences using AMBA 5 CHI Link FSM
-example and how this methodology helps to detect properties that are
-passing successfully but are not sound.</p>
+</div>
+<div class="section" id="organisation">
+<h3>Organisation<a class="headerlink" href="#organisation" title="Permalink to this headline">¶</a></h3>
+<p><strong>Introduction:</strong> The definition of weak precondition cover and witness
+is described. This section shows some examples where problems such as
+vacuity can lead to erroneous conclusions by the design or verification
+engineer. Also this section presents a method to extract an evidence of
+a proven property in a form of a waveform. This section is mostly
+theoretical and explains in detail the rationale behind these special
+covers.</p>
+<p><strong>Methodology</strong>: This section delves into the practical application of
+the weak precondition cover and witness constructs, applied in two main
+case studies using a <em>valid-ready AXI4 faulty design</em> to trivially
+exemplify the application of both covers, and a more advanced design that
+uses an abstract implementation of the <em>AMBA AXI5 CHI Link FSM</em> which shows
+more interesting scenarios not covered by the set of assertions. This section
+ends with a guide that shows how to debug unreached witness covers.
+Section <em>Methodology</em> is more hands-on-work.</p>
 </div>
 <div class="section" id="introduction">
 <h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
