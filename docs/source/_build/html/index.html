@@ -194,7 +194,7 @@ use implication operator as well as properties that use it. The
 unbounded delay ##DELAY can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
 implications. For example, the weak precondition cover of the property
-a0: s1 |=&gt; p1 and a1: s1 |-&gt; p1 in both precondition and precondition
+<code class="docutils literal notranslate"><span class="pre">a0:</span> <span class="pre">s1</span> <span class="pre">|=&gt;</span> <span class="pre">p1</span></code> and <code class="docutils literal notranslate"><span class="pre">a1:</span> <span class="pre">s1</span> <span class="pre">|-&gt;</span> <span class="pre">p1</span></code> in both precondition and precondition
 with delay are:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -246,8 +246,8 @@ derive the weak precondition covers.</p>
 </div>
 <p>It is also possible to use the weak precondition cover to verify that
 the expression of a triggering assumption is reachable. For example, the
-weak precondition cover of the assumption a1: assume property(en |=&gt;
-!o_rst) is:</p>
+weak precondition cover of the assumption <code class="docutils literal notranslate"><span class="pre">a1:</span> <span class="pre">assume</span> <span class="pre">property(en</span> <span class="pre">|=&gt;</span>
+<span class="pre">!o_rst)</span></code> is:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -307,8 +307,8 @@ consequent to find a path in the design where both are reachable.</p></td>
 </tr>
 </tbody>
 </table>
-<p>For example, the witness covers of the properties a0: property(s1 |=&gt;
-p1), a1: property(s1 |-&gt; p1) and a2: property(s1) are:</p>
+<p>For example, the witness covers of the properties <code class="docutils literal notranslate"><span class="pre">a0:</span> <span class="pre">property(s1</span> <span class="pre">|=&gt;</span>
+<span class="pre">p1)</span></code>, <code class="docutils literal notranslate"><span class="pre">a1:</span> <span class="pre">property(s1</span> <span class="pre">|-&gt;</span> <span class="pre">p1)</span></code> and <code class="docutils literal notranslate"><span class="pre">a2:</span> <span class="pre">property(s1)</span></code> are:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -568,8 +568,8 @@ show an unreachable status, flagging a vacuous result.</p></td>
 </tbody>
 </table>
 <p>In Figure <strong>1.11</strong>, we saw how an accidental default disable statement can
-render an otherwise reasonable assertion vacuous. In Figure 2.2, we
-detect this situation with the witness s_witness.</p>
+render an otherwise reasonable assertion vacuous. In <strong>Figure 2.2</strong>, we
+detect this situation with the witness <em>s_witness</em>.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -693,8 +693,8 @@ passes even though an obvious error has been introduced.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Figure 3.1. Erroneous design for illustration. Note how first_point
-never changes from 0, so the assertion is traduced to (0 |-&gt;
-!TVALID_nxt). Execute sby -f axi_tvalid.sby prove and the assertion
+never changes from 0, so the assertion is traduced to <code class="docutils literal notranslate"><span class="pre">(0</span> <span class="pre">|-&gt;</span>
+<span class="pre">!TVALID_nxt)</span></code>. Execute sby -f axi_tvalid.sby prove and the assertion
 will pass.</p></td>
 </tr>
 </tbody>
@@ -731,9 +731,9 @@ erroneous design.</p></td>
 </tbody>
 </table>
 <p>The reason the proof fails is because first_point was set to 0
-regardless of the state of ARESETn; therefore, TVALID_condition is never
+regardless of the state of <em>ARESETn</em>; therefore, <em>TVALID_condition</em> is never
 triggered (it is vacuous) and it always passes regardless of the logic
-driving TVALID_nxt.</p>
+driving <em>TVALID_nxt</em>.</p>
 <p>We choose to use a witness to confirm the condition is being covered.
 The following modifications are added to the design:</p>
 <table class="docutils align-default">
@@ -899,12 +899,12 @@ properties. This last block can be considered as an FPV checker.</p></td>
 </table>
 <p>The following requirements needs to hold in the design:</p>
 <ol class="arabic simple">
-<li><p>A property that ensures that the design cannot transit to a banned output (shown in red boxes in the Figure 4.2).</p></li>
-<li><p>A property that ensures that the <strong>Path 1</strong> shown in table 13-4 is reached correctly with the current sequence of inputs provided by the <strong>test</strong> module.</p></li>
-<li><p>A property that ensures that the first transition (TxStop/RxStop -&gt; TxStop/RxAct) is correct.</p></li>
+<li><p>A property that ensures that the design cannot transit to a banned output (shown in red boxes in the <strong>Figure 4.2</strong>).</p></li>
+<li><p>A property that ensures that the <strong>Path 1</strong> shown in <strong>Table 13-4</strong> is reached correctly with the current sequence of inputs provided by the <strong>test</strong> module.</p></li>
+<li><p>A property that ensures that the first transition <code class="docutils literal notranslate"><span class="pre">(TxStop/RxStop</span> <span class="pre">-&gt;</span> <span class="pre">TxStop/RxAct)</span></code> is correct.</p></li>
 </ol>
 <p>The <strong>Table 4.1</strong> shows the encoding of such properties. Note how the
-properties are using weak unbounded sequences (a ##[+] b).</p>
+properties are using weak unbounded sequences <code class="docutils literal notranslate"><span class="pre">(a</span> <span class="pre">##[+]</span> <span class="pre">b)</span></code>.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 100%" />
@@ -1061,7 +1061,7 @@ initial state to some interesting point of the design and see what is
 happening. In other words, by modifying the witness sequence, an
 evidence of the design behaviour can be obtained. The problem can be
 understood with this evidence.</p>
-<p>The design takes 4 clock cycles to travel from s1 to stop. The witness
+<p>The design takes 4 clock cycles to travel from <code class="docutils literal notranslate"><span class="pre">s1</span></code> to <code class="docutils literal notranslate"><span class="pre">stop</span></code>. The witness
 of the behaviour can be then encoded as follows:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -1142,7 +1142,7 @@ we_completed_path.</p></td>
 </table>
 <p>But if the precondition <em>current_state</em> is enabled and the consequent is
 false, why did the property not fail?. Because the weak unbounded
-sequence (##[+]) does not witness the inability of the precondition
+sequence <code class="docutils literal notranslate"><span class="pre">(##[+])</span></code> does not witness the inability of the precondition
 <em>completed_path</em> to happen during the test (the test consists of four
 states that cannot be expanded further, if no issue is witnessed during
 all runs, a weak sequence results in a true value therefore not
@@ -1195,13 +1195,13 @@ problem to fix.</p></td>
 </tbody>
 </table>
 <p>For the unreached witness of ap_completed_path: “A property that ensures
-that the first transition (TxStop/RxStop -&gt; TxStop/RxAct) is correct”,
-it is expected that rxlinkactivereq is asserted and txlinkactivereq is
+that the first transition <code class="docutils literal notranslate"><span class="pre">(TxStop/RxStop</span> <span class="pre">-&gt;</span> <span class="pre">TxStop/RxAct)</span></code> is correct”,
+it is expected that <em>rxlinkactivereq</em> is asserted and <em>txlinkactivereq</em> is
 deasserted in state s1 of the controller for the FSM to be able to
-transition from TxStop/RxStop to TxStop/RxAct. Since the inputs are not
+transition from <em>TxStop/RxStop</em> to <em>TxStop/RxAct</em>. Since the inputs are not
 set, and the default values of unset inputs are 0 by the implementation,
-the precondition of the property is equivalent to <em>initial_current_state
-&amp;&amp; (1’b0 || 1’b0),</em> which evaluates to 0, making this property pass
+the precondition of the property is equivalent to <code class="docutils literal notranslate"><span class="pre">initial_current_state</span>
+<span class="pre">&amp;&amp;</span> <span class="pre">(1’b0</span> <span class="pre">||</span> <span class="pre">1’b0)</span></code>,* which evaluates to 0, making this property pass
 vacuously.</p>
 <table class="docutils align-default">
 <colgroup>

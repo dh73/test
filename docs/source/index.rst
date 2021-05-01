@@ -151,7 +151,7 @@ use implication operator as well as properties that use it. The
 unbounded delay ##DELAY can only be 1 if the property uses
 non-overlapping implications, or 0 if the property uses overlapping
 implications. For example, the weak precondition cover of the property
-a0: s1 \|=> p1 and a1: s1 \|-> p1 in both precondition and precondition
+``a0: s1 |=> p1`` and ``a1: s1 |-> p1`` in both precondition and precondition
 with delay are:
 
 +----------------------------------------------------------------------+
@@ -191,8 +191,8 @@ and how they will look for this design.
 
 It is also possible to use the weak precondition cover to verify that
 the expression of a triggering assumption is reachable. For example, the
-weak precondition cover of the assumption a1: assume property(en \|=>
-!o_rst) is:
+weak precondition cover of the assumption ``a1: assume property(en |=>
+!o_rst)`` is:
 
 +----------------------------------------------------------------------+
 | .. code-block:: systemverilog                                        |
@@ -240,8 +240,8 @@ operator) is shown in **Figure 1.6**.
 | consequent to find a path in the design where both are reachable.    |
 +----------------------------------------------------------------------+
 
-For example, the witness covers of the properties a0: property(s1 \|=>
-p1), a1: property(s1 \|-> p1) and a2: property(s1) are:
+For example, the witness covers of the properties ``a0: property(s1 |=>
+p1)``, ``a1: property(s1 |-> p1)`` and ``a2: property(s1)`` are:
 
 +----------------------------------------------------------------------+
 | .. code-block:: systemverilog                                        |
@@ -427,8 +427,8 @@ property.
 +----------------------------------------------------------------------+
 
 In Figure **1.11**, we saw how an accidental default disable statement can
-render an otherwise reasonable assertion vacuous. In Figure 2.2, we
-detect this situation with the witness s_witness.
+render an otherwise reasonable assertion vacuous. In **Figure 2.2**, we
+detect this situation with the witness *s_witness*.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ../../src/sandbox_examples/sandbox.sv            |
@@ -478,8 +478,8 @@ passes even though an obvious error has been introduced.
 |     :lines: 1-25                                                     |
 +======================================================================+
 | Figure 3.1. Erroneous design for illustration. Note how first_point  |
-| never changes from 0, so the assertion is traduced to (0 \|->        |
-| !TVALID_nxt). Execute sby -f axi_tvalid.sby prove and the assertion  |
+| never changes from 0, so the assertion is traduced to ``(0 |->       |
+| !TVALID_nxt)``. Execute sby -f axi_tvalid.sby prove and the assertion|
 | will pass.                                                           |
 +----------------------------------------------------------------------+
 
@@ -508,9 +508,9 @@ the property is obviously incorrect.
 +------------------------------------------------------------------------+
 
 The reason the proof fails is because first_point was set to 0
-regardless of the state of ARESETn; therefore, TVALID_condition is never
+regardless of the state of *ARESETn*; therefore, *TVALID_condition* is never
 triggered (it is vacuous) and it always passes regardless of the logic
-driving TVALID_nxt.
+driving *TVALID_nxt*.
 
 We choose to use a witness to confirm the condition is being covered.
 The following modifications are added to the design:
@@ -648,14 +648,14 @@ analyse it while reading the next part of this appnote.
 
 The following requirements needs to hold in the design:
 
-1. A property that ensures that the design cannot transit to a banned output (shown in red boxes in the Figure 4.2).
+1. A property that ensures that the design cannot transit to a banned output (shown in red boxes in the **Figure 4.2**).
 
-2. A property that ensures that the **Path 1** shown in table 13-4 is reached correctly with the current sequence of inputs provided by the **test** module.
+2. A property that ensures that the **Path 1** shown in **Table 13-4** is reached correctly with the current sequence of inputs provided by the **test** module.
 
-3. A property that ensures that the first transition (TxStop/RxStop -> TxStop/RxAct) is correct.
+3. A property that ensures that the first transition ``(TxStop/RxStop -> TxStop/RxAct)`` is correct.
 
 The **Table 4.1** shows the encoding of such properties. Note how the
-properties are using weak unbounded sequences (a ##[+] b).
+properties are using weak unbounded sequences ``(a ##[+] b)``.
 
 +----------------------------------------------------------------------+
 | .. literalinclude:: ../../src/amba5_chi_link/amba5_chi_link_fsm.sv   |
@@ -771,7 +771,7 @@ happening. In other words, by modifying the witness sequence, an
 evidence of the design behaviour can be obtained. The problem can be
 understood with this evidence.
 
-The design takes 4 clock cycles to travel from s1 to stop. The witness
+The design takes 4 clock cycles to travel from ``s1`` to ``stop``. The witness
 of the behaviour can be then encoded as follows:
 
 +------------------------------------------------------------------------+
@@ -821,7 +821,7 @@ trace is generated from the second witness we_completed_path.
 
 But if the precondition *current_state* is enabled and the consequent is
 false, why did the property not fail?. Because the weak unbounded
-sequence (##[+]) does not witness the inability of the precondition
+sequence ``(##[+])`` does not witness the inability of the precondition
 *completed_path* to happen during the test (the test consists of four
 states that cannot be expanded further, if no issue is witnessed during
 all runs, a weak sequence results in a true value therefore not
@@ -861,13 +861,13 @@ solving the last problem presented by ap_completed_path witness.
 +----------------------------------------------------------------------------+
 
 For the unreached witness of ap_completed_path: “A property that ensures
-that the first transition (TxStop/RxStop -> TxStop/RxAct) is correct”,
-it is expected that rxlinkactivereq is asserted and txlinkactivereq is
+that the first transition ``(TxStop/RxStop -> TxStop/RxAct)`` is correct”,
+it is expected that *rxlinkactivereq* is asserted and *txlinkactivereq* is
 deasserted in state s1 of the controller for the FSM to be able to
-transition from TxStop/RxStop to TxStop/RxAct. Since the inputs are not
+transition from *TxStop/RxStop* to *TxStop/RxAct*. Since the inputs are not
 set, and the default values of unset inputs are 0 by the implementation,
-the precondition of the property is equivalent to *initial_current_state
-&& (1’b0 \|\| 1’b0),* which evaluates to 0, making this property pass
+the precondition of the property is equivalent to ``initial_current_state
+&& (1’b0 || 1’b0)``,* which evaluates to 0, making this property pass
 vacuously.
 
 +-------------------------------------------------------------------+
