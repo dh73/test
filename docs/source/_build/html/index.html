@@ -1,0 +1,1347 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weak precondition cover and witness for SVA properties &#8212; Python  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="weak-precondition-cover-and-witness-for-sva-properties">
+<h1>Weak precondition cover and witness for SVA properties<a class="headerlink" href="#weak-precondition-cover-and-witness-for-sva-properties" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="am-i-testing-what-i-think-im-testing-series">
+<h2>Am I testing what I think I’m testing? - series<a class="headerlink" href="#am-i-testing-what-i-think-im-testing-series" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>What You will learn in this paper</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><ul class="simple">
+<li><p>Default clocking and default disable declarations</p></li>
+<li><p>Sequences and cycle delays</p></li>
+<li><p>Overlapping and non-overlapping implication syntax and semantic</p></li>
+<li><p>Weak precondition cover and witness</p></li>
+<li><p>How to apply that to a practical HDL code example</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>The source code for this Application note is provided in:</strong></p>
+<ul class="simple">
+<li><p><strong>Link to github repo</strong> <a class="reference external" href="https://github.com/YosysHQ-AppNotes/AppNote-120">https://github.com/YosysHQ-AppNotes/AppNote-120</a></p></li>
+</ul>
+<p>Also, <strong>you need Tabby CAD Suite! Ask us for an evaluation license:</strong> <a class="reference external" href="https://www.yosyshq.com/contact">https://www.yosyshq.com/contact</a></p>
+</div>
+<div class="section" id="abstract">
+<h3>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h3>
+<p>Formal Verification uses mathematical techniques to exhaustively prove
+that a property, or an obligation that must hold in a system, is proven
+under all possible conditions or inputs of an RTL design. When this
+property is falsified, a waveform or trace showing the sequence of
+inputs leading to the violation is produced by the tool, but when no
+violation occurs, the tool reports that a property is proven and no
+further evidence of what trace leads to the proof of such assertion is
+generated. Furthermore, assertions and assumptions are often composed of
+a precondition (an expression that specifies when a property should be
+checked) and a consequence (the condition that must hold for all
+possible paths in the design). When the precondition is not triggered
+for any reason, the assertion will pass vacuously <a class="footnote-reference brackets" href="#id6" id="id1">1</a>.</p>
+<p>This application note presents a methodology that uses two special cover
+expressions, known as <strong>weak precondition</strong> and <strong>witness</strong> covers, that
+can help to detect and debug false positives due vacuous results, as
+well as a method to extract an evidence of a proven property in a form
+of a waveform. First, we present scenarios where weak precondition
+covers and witnesses can be employed to identify problems in the
+<strong>Formal Property Verification</strong> (FPV) environment, and then we finalise
+by showcasing some more difficult sequences using AMBA 5 CHI Link FSM
+example and how this methodology helps to detect properties that are
+passing successfully but are not sound.</p>
+</div>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>FPV proves that a property that describes the behaviour of a system,
+usually described in <strong>SystemVerilog Assertions</strong> (SVA) or <strong>Property
+Specification Language</strong> (PSL) in VHDL, holds in a circuit by
+exhaustively searching in the design space using all possible inputs, a
+sequence of values that leads to an state where the specified behavior
+is violated. It then generates a <strong>counterexample</strong> (CEX) in the form of
+a waveform or trace <a class="footnote-reference brackets" href="#id7" id="id2">2</a> that leads to failure. But, if the solver
+cannot find a violation, the FPV tool reports that the property was
+proven and no further evidence of what scenarios were tested to reach
+that conclusion are generated.</p>
+<p>One of the most common problems that happens to both experienced and
+fresh engineers when working with FPV is when a number of properties are
+passing vacuously and this result is not detected. Since the nature of
+FPV is not generating evidence of the traces used to demonstrate the
+conclusion that no assertion was violated, debugging vacuity can be a
+difficult task. For example, sometimes the number of constraints causes
+conflicts with the current suite of assertions. To solve this problem,
+some heuristics can be used to identify which constraints are the
+conflicting ones, and refine them, but this is a tedious task and
+usually requires a good understanding of the design.</p>
+<p>Vacuity is present in a design due numerous reasons, including:</p>
+<ul class="simple">
+<li><p>The property does not correctly express the behavior to be proven.</p>
+<ul>
+<li><p>The semantics of the SVA property are different from what the design/verification engineer thought. That means, if the logic that fires an assertion never happens, then this assertion will always pass regardless of the logic that is supposed to be checked by the assertion.</p></li>
+</ul>
+</li>
+<li><p>The design does not exhibit the triggering behavior because the design is <strong>overconstrained</strong>, or in other words, the expected behaviour is restricted.</p>
+<ul>
+<li><p>Constraints limit the design states and generate conflicts to specified properties that are supposed to check such states if they are in the cone of influence of the assertion (see Figure 1.1).</p></li>
+</ul>
+</li>
+</ul>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image6.png"><img alt="_images/image6.png" class="align-center" src="_images/image6.png" style="width: 6.45in; height: 2.45in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.1. The restriction R1, represented as states grayed out,
+will make both assert statements A1 and A2 pass vacuously, since the
+precondition (state C and state D) can never be true.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Having a way to observe evidence of what the solver is taking as proof
+of a property is also useful for the following reasons:</p>
+<ol class="arabic simple">
+<li><p>Provides guidance to verification engineers wanting to cover design behaviours.</p></li>
+<li><p>Capturing a sequence of events that can be used to feed back into the RTL model by design engineers.</p></li>
+<li><p>Ensure correct RTL implementation when no testbench is developed.</p></li>
+<li><p>Increase confidence in the design by comparing a trace of a proven property with the semantics of the written assertion.</p></li>
+</ol>
+<p>Both weak precondition and witness covers can be used to assist in the
+task of avoiding false positives by refining vacuity as well <a class="footnote-reference brackets" href="#id8" id="id3">3</a>, or
+providing evidence of a trace that the solver uses as a proof of a
+property. The following sections show how to use these special covers
+and how to apply them.</p>
+<div class="section" id="weak-precondition-cover">
+<h4>Weak Precondition Cover<a class="headerlink" href="#weak-precondition-cover" title="Permalink to this headline">¶</a></h4>
+<p>The weak precondition cover statement is shown in <strong>Figure 1.2</strong>. This cover
+demonstrates that the precondition of a property can be covered, or can
+evaluate to true, with the current set of constraints and the
+configuration of the system<em>.</em> By adding an extra task to the SBY file
+to add weak precondition covers of assertions, in <strong>cover</strong> mode, Tabby
+CAD can validate if the result of the property is obtained from a valid
+behavior if both <em>prove</em> and <em>cover</em> mode succeeded, or if there is a
+discrepancy or vacuity if assertion passses but the weak precondition is
+not reachable.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">precondition_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">antecedent</span><span class="p">);</span>
+<span class="nl">precondition_cover_delay:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">antecedent</span> <span class="p">##</span><span class="n">DELAY</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.2. Weak precondition cover expressions. The
+<em>precondition_cover</em> checks reachability of the antecedent, and the
+<em>precondition_cover_delay</em> checks the same but adds an extra delay
+to observe what happens in the following clock cycle. The 1’b1 after
+the bounded delay will match anything after <em>antecedent</em> sequence
+match, and its main purpose is to help build valid syntax of the two
+sequence concatenations used in here.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <em>precondition_cover</em> can be used to check that properties that use
+implication operators can be proven non vacuously. The
+<em>precondition_cover_delay</em> can be used for both properties that do not
+use implication operator as well as properties that use it. The
+unbounded delay ##DELAY can only be 1 if the property uses
+non-overlapping implications, or 0 if the property uses overlapping
+implications. For example, the weak precondition cover of the property
+a0: s1 |=&gt; p1 and a1: s1 |-&gt; p1 in both precondition and precondition
+with delay are:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">a0_precondition_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>
+<span class="nl">a0_precond_cover_delay:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span> <span class="p">##</span><span class="mh">1</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">);</span>
+
+<span class="nl">a1_precondition_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>
+<span class="nl">a1_precond_cover_delay:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span> <span class="p">##</span><span class="mh">0</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.3. Assuming default clock and reset definition, the weak
+precondition cover of the expression a0. For a1, both precondition
+covers show the same trace as they are logically equivalent.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>Figure 1.4</strong> shows a waveform diagram of these cover statements
+and how they will look for this design.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image4.png"><img alt="_images/image4.png" class="align-center" src="_images/image4.png" style="width: 3.9in; height: 3.27in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.4. The waveform shows that <em>precondition_cover_h0</em> reaches
+only the condition <em>s1</em> whereas <em>precondition_cover_delay_h0</em> adds
+an extra delay to capture the behavior at the next clock cycle.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This cover does not add complexity to the design, and usually most FPV
+tools extract by themselves this kind of cover expression. It is also
+important to mention that for properties with nested implication, the
+weak precondition is different since context may be needed as well to
+derive the weak precondition covers.</p>
+</div>
+<p>It is also possible to use the weak precondition cover to verify that
+the expression of a triggering assumption is reachable. For example, the
+weak precondition cover of the assumption a1: assume property(en |=&gt;
+!o_rst) is:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">precondition_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">en</span><span class="p">);</span>
+<span class="nl">precond_cover_delay:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">en</span> <span class="p">##</span><span class="mh">1</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.5. Using weak precondition cover as a guidance to avoid
+invalid constraints. In this example, without using the weak
+precondition cover, if the signal <em>en</em> is never true, the constraint
+will be invalid. By using the weak precondition cover, this scenario
+will be detected.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Covering only the antecedent (like in <em>precondition_cover</em> syntax) is
+the preferred precondition cover statement that most FPV tools use, and
+the weak precondition cover with delay can be also used to visualize
+behaviors at the next clock cycle of the overlapping implications. Most
+of the situations where vacuity is the reason for passing properties can
+be detected by using the weak precondition cover, however, there are
+cases where this cover is reachable, but the proof can still pass
+vacuously because of the weak semantics of the sequence property <a class="footnote-reference brackets" href="#id9" id="id4">4</a>.
+For these cases, the witness cover can detect such problems at the price
+of adding a little complexity or computational overhead to the FPV tool.</p>
+</div>
+<div class="section" id="witness-cover">
+<h4>Witness Cover<a class="headerlink" href="#witness-cover" title="Permalink to this headline">¶</a></h4>
+<p>The witness cover is similar to the weak precondition cover but it adds
+the consequent of the property to the cover expression. In this way,
+Tabby CAD looks for a path where both triggering condition and effect of
+the property can be seen. The generated waveform can be used as evidence
+of a trace that the solver used to prove an assertion, or to make sure
+the constrained behaviour can be seen in the design.</p>
+<p>The witness cover expression of a triggering property (using implication
+operator) is shown in <strong>Figure 1.6</strong>.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">witness_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">antecedent</span> <span class="p">##</span><span class="n">DELAY</span> <span class="n">consequent</span><span class="p">).</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.6. The witness cover uses both the antecedent and
+consequent to find a path in the design where both are reachable.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For example, the witness covers of the properties a0: property(s1 |=&gt;
+p1), a1: property(s1 |-&gt; p1) and a2: property(s1) are:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">a0_witness_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span> <span class="p">##</span><span class="mh">1</span> <span class="n">p1</span><span class="p">);</span>
+<span class="nl">a1_witness_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span> <span class="p">##</span><span class="mh">0</span> <span class="n">p1</span><span class="p">);</span>
+<span class="nl">a2_witness_cover:</span> <span class="k">cover</span> <span class="k">property</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.7. Assuming default clock and reset definition, the witness
+cover of the expression a0 and a1. Note that for a property that
+does not use the implication operator, covering the expression as in
+<em>a2_witness_cover</em> generates a witness, not a weak precondition
+cover.</p></td>
+</tr>
+</tbody>
+</table>
+<p>It is important to note that the witness cover is not the removal of the
+implication operation and the change of the assert statement to a cover
+statement but a concatenation of the two sequences composed by the
+antecedent and the consequent of a property. The implication operator in
+a cover statement does not have defined semantics in the IEEE 1800-2012
+LRM. The generated witness using this syntax is only one of the possible
+traces the solver found as an evidence of validity, but it may not be
+the only one.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some tools will not extract this cover by default because the cover adds
+extra overhead to the design and may not be desirable to have it enabled
+all the time, or when certain scenarios do not benefit from witnessing
+traces.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image3.png"><img alt="_images/image3.png" class="align-center" src="_images/image3.png" style="width: 3.17in; height: 3.46in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.8. The witness is the assertion logic (antecedent and
+consequent) converted into a cover statement, whereas the weak
+precondition is just a precondition reachability test with limited
+visibility.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="methodology">
+<h3>Methodology<a class="headerlink" href="#methodology" title="Permalink to this headline">¶</a></h3>
+<p>The general recommendation is to use both weak precondition covers and
+witnesses in a mixed way. But, due to the nature of Tabby CAD separating
+prove and cover modes, the witness covers can be used to get a
+stronger version of vacuity detection instead. The following section describes
+where and how both precondition cover and witness can be employed to
+increase confidence in FPV results.</p>
+<p>Both weak precondition cover and witness, when reachable, can be used
+to:</p>
+<ol class="arabic simple">
+<li><p>Eliminate scenarios of vacuous properties, thus avoiding false positives.</p></li>
+<li><p>Debugging unreachable states, insufficient depth in BMC and root-cause an overconstrained set of assumptions.</p></li>
+<li><p>Get evidence of proven behaviors, also to compare the traces with assertion semantics to identify semantic errors when defining properties.</p></li>
+<li><p>Debug dead-ends and weak sequences that may have a vacuous suffix.</p></li>
+</ol>
+<p>When these covers are not reachable, the following reasoning can be
+derived:</p>
+<ol class="arabic simple">
+<li><p>Properties that passed with covers that are unreachable are not healthy.</p>
+<ol class="loweralpha simple">
+<li><p>A property with successful status where the precondition or witness is unreachable, is vacuous and needs further analysis. The weak precondition and witness cover can be used to relax the constraints to a state where the conflict between assertions and assumptions is solved.</p></li>
+</ol>
+</li>
+<li><p>The FPV run can be stopped any time there are discrepancies between the covers and the asserts.</p>
+<ol class="loweralpha simple">
+<li><p>For example, a regression system for large projects can be built, where if vacuity happens for a group of important properties, the run can be stopped and the engineering team can be informed immediately instead of wasting cycles for meaningless vacuous properties to converge.</p></li>
+<li><p>In any other environment, if an important number of constraints are used and the properties start to pass vacuously, the run can be stopped as well, since no conclusive result will be obtained from this run. Instead of having a false sensation of confidence and catching the problem in later flows due to vacuous results, the engineering team can improve the environment by debugging the constraints/settings and release an RTL with better QoR.</p></li>
+</ol>
+</li>
+<li><p>Assumptions can be checked by using both special covers.</p>
+<ol class="loweralpha simple">
+<li><p>Conflicts between properties and assumptions, dead ends, fairness obligation and liveness property <a class="footnote-reference brackets" href="#id10" id="id5">5</a> loops can be checked using both special covers.</p></li>
+</ol>
+</li>
+<li><p>YosysHQ recommends using a mixed set of weak precondition covers and witnesses, but is inclined to the <strong>witness</strong> cover because it is stronger than the rest. For example, in designs with assertions with an important number or related constraints, witnesses can improve vacuity detection. For early RTL implementation or first FPV run, the weak precondition cover will not add high computation overhead. It is also suggested to incrementally move to witness cover to increase confidence of the current set of assertions and results.</p></li>
+</ol>
+<p>A flow to apply weak precondition cover or witness is shown below.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image7.png"><img alt="_images/image7.png" class="align-center" src="_images/image7.png" style="width: 6.2in; height: 3.92in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.9. The Methodology flowchart. When the properties are
+passing and the witness covers (or weak precondition) are
+unreachable, the results are unsound and will need extra analysis.
+Without this cover, the verification or design engineer may take for
+granted that the behaviour was proven when in reality this was not
+the case.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Let’s consider three examples. First, consider what happens when design
+assumptions prevent a state from becoming reachable. In <strong>Figure 1.10</strong>, we
+have a design which accepts an 8-bit key as an input, and it asserts an
+unlock signal once the key matches a certain programmed value. The
+unlock signal can never be logic 1 in an FPV run, since the restrict_val
+assumption constrains the solver to never consider values greater than
+8’h83 for the key primary input.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">)</span> <span class="n">unlock</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="k">else</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="k">inside</span> <span class="p">{</span><span class="mh">8</span><span class="mb">&#39;b1</span><span class="o">?</span><span class="mh">0</span><span class="o">??</span><span class="mh">1</span><span class="o">?</span><span class="mh">0</span><span class="p">})</span> <span class="n">unlock</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">;</span>
+   <span class="k">end</span>
+   <span class="nl">restrict_val:</span> <span class="k">assume</span> <span class="k">property</span><span class="p">(</span><span class="n">key</span> <span class="o">&lt;</span> <span class="mh">8&#39;h83</span><span class="p">);</span>
+   <span class="nl">unlock_test:</span>  <span class="k">assert</span> <span class="k">property</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mh">7</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">5</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">[</span><span class="mh">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">0</span><span class="p">]</span> <span class="o">|-&gt;</span> <span class="p">##</span><span class="mh">1</span> <span class="n">unlock</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.10. In this example, for the unlock port to be asserted,
+the input key minimum value should be 8’h84, but the constraint
+restrict_val does not allow that value to be reached. The property
+will pass vacuously because that part of the logic was never
+activated. Execute <strong>sby -f sandbox.sby example1</strong> and the assertion
+will pass.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Another example that involves logic and connectivity issues, such as
+inverting pins or ports tied to constant values that block the testing
+of some properties, can introduce errors that make properties pass
+vacuously. In Figure 1.11, a default disable statement accidentally
+prevents the delayed_reset assertion from being triggered.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="k">var</span> <span class="k">logic</span> <span class="p">[</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span> <span class="n">sreg</span><span class="p">;</span>
+   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">)</span> <span class="n">sreg</span> <span class="o">&lt;=</span> <span class="mh">2&#39;h0</span><span class="p">;</span>
+      <span class="k">else</span>       <span class="n">sreg</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="n">sreg</span><span class="p">[</span><span class="mh">0</span><span class="p">],</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">};</span>
+   <span class="k">end</span>
+<span class="no">`ifdef</span> <span class="n">FORMAL</span>
+   <span class="k">default</span> <span class="k">clocking</span> <span class="n">fpv_clk</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">);</span> <span class="k">endclocking</span>
+   <span class="c1">// Disable the check if the design is in reset state</span>
+   <span class="k">default</span> <span class="k">disable</span> <span class="k">iff</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">);</span>
+   <span class="cm">/* This can be used as well, since the reset is</span>
+<span class="cm">    * synchronous: default disable iff($(sampled(!rstn))); */</span>
+   <span class="nl">delayed_reset:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span> <span class="o">|-&gt;</span> <span class="p">##</span><span class="mh">2</span> <span class="n">delayed_rst</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.11. One of the most common mistakes that causes properties
+to pass vacuously is when the default disable cause restricts a
+variable to take the value defined in the property. In this example
+all properties are disabled when the system is in reset state (or
+when the rstn pin is low). But the property <em>delayed_reset</em>
+mistakenly uses the restricted value to check for a condition,
+making the assertion to pass vacuously. Execute <strong>sby -f sandbox.sby
+example2</strong> and the assertion will pass.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Finally, it’s possible that the solver just hasn’t had enough cycles to
+reach a particular state needed to prove a property. For example, when
+performing a Bounded Model Check (BMC), you might not have sufficient
+depth configured. In Figure 1.12, the BMC depth is set with a value less
+than the required to reach the expected maximum latency of an expected
+behaviour of a property.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="c1">// Property:</span>
+<span class="nl">tready_max_wait:</span> <span class="k">assert</span> <span class="k">property</span><span class="p">(@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="k">disable</span> <span class="k">iff</span><span class="p">(</span><span class="o">!</span><span class="n">ARESETn</span><span class="p">)</span>
+                                 <span class="n">TVALID</span> <span class="o">&amp;</span> <span class="o">!</span><span class="n">TREADY</span> <span class="o">|-&gt;</span> <span class="p">##[</span><span class="mh">1</span><span class="o">:</span><span class="mh">16</span><span class="p">]</span> <span class="n">TREADY</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="p">#</span> <span class="n">SBY</span> <span class="n">configuration</span> <span class="n">file</span>
+<span class="p">[</span><span class="n">options</span><span class="p">]</span>
+<span class="n">mode</span> <span class="n">bmc</span>
+<span class="n">depth</span> <span class="mh">14</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1.12. If the bound for a BMC is less than the bound needed to
+reach a useful state for proving the property, it will pass and
+might even leave a bug undetected. The witness cover is specially
+useful when performing BMC tests, making sure the property scenario
+is reachable with the current bound.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="application-of-the-methodology">
+<h4>Application of the Methodology<a class="headerlink" href="#application-of-the-methodology" title="Permalink to this headline">¶</a></h4>
+<p>Reviewing the three prior examples, we can now illustrate how inserting
+weak precondition and witness covers can help ensure proper assertion
+status. In Figure 2.1 we insert either the weak precondition s_weak or
+the witness s_witness, either of which ensures SBY reaches a state where
+key &gt;= 8’h84. Additionally, s_witness ensures that unlock will
+subsequently hold. Observe how the only difference between s_weak and
+s_witness is whether or not the expected consequent is part of the
+property.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">)</span> <span class="n">unlock</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="k">else</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="k">inside</span> <span class="p">{</span><span class="mh">8</span><span class="mb">&#39;b1</span><span class="o">?</span><span class="mh">0</span><span class="o">??</span><span class="mh">1</span><span class="o">?</span><span class="mh">0</span><span class="p">})</span> <span class="n">unlock</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">;</span>
+   <span class="k">end</span>
+   <span class="nl">restrict_val:</span> <span class="k">assume</span> <span class="k">property</span><span class="p">(</span><span class="n">key</span> <span class="o">&lt;</span> <span class="mh">8&#39;h83</span><span class="p">);</span>
+   <span class="nl">unlock_test:</span>  <span class="k">assert</span> <span class="k">property</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mh">7</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">5</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">[</span><span class="mh">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">0</span><span class="p">]</span> <span class="o">|-&gt;</span> <span class="p">##</span><span class="mh">1</span> <span class="n">unlock</span><span class="p">);</span>
+   <span class="nl">s_weak:</span>       <span class="k">cover</span>  <span class="k">property</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mh">7</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">5</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">[</span><span class="mh">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">0</span><span class="p">]);</span>
+   <span class="nl">witness:</span>      <span class="k">cover</span>  <span class="k">property</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mh">7</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">5</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">[</span><span class="mh">2</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">key</span><span class="p">[</span><span class="mh">0</span><span class="p">]</span> <span class="p">##</span><span class="mh">1</span> <span class="n">unlock</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 2.1. Since the restrict_val constraint introduces a bug that
+causes the property to not trigger, the weak precondition s_weak and
+witness s_witness will catch the error, resulting in an unreachable
+status. Execute <strong>sby -f sandbox.sby witness1</strong> and the witness will
+show an unreachable status, flagging a vacuous result.</p></td>
+</tr>
+</tbody>
+</table>
+<p>In Figure 1.11, we saw how an accidental default disable statement can
+render an otherwise reasonable assertion vacuous. In Figure 2.2, we
+detect this situation with the witness s_witness.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="k">var</span> <span class="k">logic</span> <span class="p">[</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span> <span class="n">sreg</span><span class="p">;</span>
+   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">)</span> <span class="n">sreg</span> <span class="o">&lt;=</span> <span class="mh">2&#39;h0</span><span class="p">;</span>
+      <span class="k">else</span>       <span class="n">sreg</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="n">sreg</span><span class="p">[</span><span class="mh">0</span><span class="p">],</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">};</span>
+   <span class="k">end</span>
+   <span class="k">default</span> <span class="k">clocking</span> <span class="n">fpv_clk</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">clk</span><span class="p">);</span> <span class="k">endclocking</span>
+   <span class="c1">// Disable the check if the design is in reset state</span>
+   <span class="k">default</span> <span class="k">disable</span> <span class="k">iff</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span><span class="p">);</span>
+   <span class="cm">/* This can be used as well, since the reset is</span>
+<span class="cm">    * synchronous: default disable iff($(sampled(!rstn))); */</span>
+   <span class="nl">delayed_reset:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span> <span class="o">|-&gt;</span> <span class="p">##</span><span class="mh">2</span> <span class="n">delayed_rst</span><span class="p">);</span>
+   <span class="nl">witness:</span>       <span class="k">cover</span>  <span class="k">property</span> <span class="p">(</span><span class="o">!</span><span class="n">rstn</span> <span class="p">##</span><span class="mh">2</span> <span class="n">delayed_rst</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 2.2. The s_witness witness will capture the problem of the
+inverted reset polarity in the property. Execute <strong>sby -f
+sandbox.sby witness2</strong> and the witness will show an unreachable
+status, flagging a vacuous result.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For our final example, when the bound defined in the formal tool
+configuration is less than the required by a property to be checked, the
+result is inconclusive. Using witnesses helps to be sure that the
+desired state is reachable with the current bound, and if not, flag it
+as erroneous, so the engineer can increase the bound of the solver. It
+is important to mention that the increase of the bound is derived
+generally from analysis of latencies, study of micro-architecture, and
+delays added by visiting possible interesting scenarios. But usually,
+the depth is increased in magnitudes of 10 cycles.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="c1">// Property:</span>
+<span class="nl">tready_max_wait:</span> <span class="k">assert</span> <span class="k">property</span><span class="p">(@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="k">disable</span> <span class="k">iff</span><span class="p">(</span><span class="o">!</span><span class="n">ARESETn</span><span class="p">)</span>
+                                 <span class="n">TVALID</span> <span class="o">&amp;</span> <span class="o">!</span><span class="n">TREADY</span> <span class="o">|-&gt;</span> <span class="p">##[</span><span class="mh">1</span><span class="o">:</span><span class="mh">16</span><span class="p">]</span> <span class="n">TREADY</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="p">#</span> <span class="n">SBY</span> <span class="n">configuration</span> <span class="n">file</span>
+<span class="p">[</span><span class="n">options</span><span class="p">]</span>
+<span class="n">mode</span> <span class="n">bmc</span>
+<span class="p">#</span> <span class="nl">ERROR:</span>
+<span class="p">#</span> <span class="n">This</span> <span class="n">is</span> <span class="n">clearly</span> <span class="n">an</span> <span class="n">insufficient</span> 
+<span class="p">#</span> <span class="n">bound</span> <span class="k">and</span> <span class="n">the</span> <span class="n">witness</span> <span class="n">will</span> 
+<span class="p">#</span> <span class="n">evidentiate</span> <span class="k">this</span> <span class="n">as</span> <span class="n">an</span> 
+<span class="p">#</span> <span class="n">unreachable</span> <span class="n">statement</span><span class="p">.</span>
+<span class="n">depth</span> <span class="mh">14</span>
+<span class="o">---</span>
+<span class="p">#</span> <span class="nl">FIX:</span>
+<span class="p">#</span> <span class="n">Increasing</span> <span class="n">the</span> <span class="n">bound</span> <span class="n">will</span> <span class="n">enable</span> 
+<span class="p">#</span> <span class="n">the</span> <span class="n">solver</span> <span class="n">to</span> <span class="n">reach</span> <span class="n">the</span> <span class="n">expected</span> 
+<span class="p">#</span> <span class="n">scenario</span><span class="p">.</span> <span class="n">The</span> <span class="n">witness</span> <span class="n">will</span> 
+<span class="p">#</span> <span class="n">evidentiate</span> <span class="k">this</span> <span class="n">as</span> <span class="n">a</span> 
+<span class="p">#</span> <span class="n">reachable</span> <span class="n">statement</span><span class="p">.</span>
+<span class="n">depth</span> <span class="mh">24</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 2.3. If the scenario is unreachable due insufficient bound,
+the s_witness cover will result in a failure.</p></td>
+</tr>
+</tbody>
+</table>
+<p>In the next section, this methodology is employed to reveal possible
+environmental issues by changing logic that the property does not
+detect, yet still passes.</p>
+</div>
+<div class="section" id="case-study-i-axi4-valid-ready-after-reset">
+<h4>Case Study I - AXI4 Valid-Ready After Reset<a class="headerlink" href="#case-study-i-axi4-valid-ready-after-reset" title="Permalink to this headline">¶</a></h4>
+<p>Consider the design in Figure 3.1. This is a simple AXI4 module with an
+assertion that is proving the TVALID after reset rule. This assertion
+passes even though an obvious error has been introduced.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="no">`default_nettype</span> <span class="n">none</span>
+<span class="k">module</span> <span class="n">axi4_tvalid</span>
+  <span class="p">(</span><span class="k">input</span>  <span class="k">wire</span>  <span class="n">ACLK</span><span class="p">,</span>
+   <span class="k">input</span>  <span class="k">wire</span> 	<span class="n">ARESETn</span><span class="p">,</span>
+   <span class="k">input</span>  <span class="k">wire</span> 	<span class="n">TREADY</span><span class="p">,</span>
+   <span class="k">output</span> <span class="k">logic</span> <span class="n">TVALID</span><span class="p">);</span>
+
+   <span class="cm">/* &quot;A master must only begin driving TVALID</span>
+<span class="cm">    * at a rising ACLK edge following a rising edge</span>
+<span class="cm">    * at which ARESETn is asserted HIGH&quot;.</span>
+<span class="cm">    * Ref: 2.7.2 Reset, p2-11, Figure 2-4. */</span>
+   <span class="k">logic</span> 	<span class="n">first_point</span><span class="p">;</span>
+   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ARESETn</span><span class="p">)</span> <span class="n">first_point</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="k">else</span>          <span class="n">first_point</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+   <span class="k">end</span>
+
+   <span class="k">logic</span> <span class="n">TVALID_nxt</span><span class="p">;</span>
+   <span class="k">always_ff</span> <span class="p">@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="k">begin</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ARESETn</span><span class="p">)</span> <span class="n">TVALID</span> <span class="o">&lt;=</span> <span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span>
+      <span class="k">else</span>           <span class="n">TVALID</span> <span class="o">&lt;=</span> <span class="n">TVALID_nxt</span><span class="p">;</span>
+   <span class="k">end</span>
+   <span class="k">assign</span> <span class="n">TVALID_nxt</span> <span class="o">=</span> <span class="p">(</span><span class="o">~</span><span class="n">first_point</span> <span class="o">&amp;</span> <span class="n">TREADY</span><span class="p">);</span>
+<span class="no">`ifdef</span> <span class="n">FORMAL</span>
+   <span class="nl">TVALID_condition:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="n">first_point</span> <span class="o">|-&gt;</span> <span class="o">!</span><span class="n">TVALID_nxt</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3.1. Erroneous design for illustration. Note how first_point
+never changes from 0, so the assertion is traduced to (0 |-&gt;
+!TVALID_nxt). Execute sby -f axi_tvalid.sby prove and the assertion
+will pass.</p></td>
+</tr>
+</tbody>
+</table>
+<p>As can be seen in Figure 3.2, the result of SBY is successful, although
+the property is obviously incorrect.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="n">engine_0</span><span class="p">.</span><span class="nl">basecase:</span> <span class="n">finished</span> <span class="p">(</span><span class="n">returncode</span><span class="o">=</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="n">Status</span> <span class="n">returned</span> <span class="n">by</span> <span class="n">engine</span> <span class="k">for</span> <span class="nl">basecase:</span>
+<span class="n">pass</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">clock</span> <span class="k">time</span> <span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span> <span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span>
+<span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">process</span> <span class="k">time</span> <span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span> <span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span>
+<span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">engine_0</span> <span class="p">(</span><span class="n">smtbmc</span><span class="p">)</span> <span class="n">returned</span> <span class="n">pass</span> <span class="k">for</span>
+<span class="n">induction</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">engine_0</span> <span class="p">(</span><span class="n">smtbmc</span><span class="p">)</span> <span class="n">returned</span> <span class="n">pass</span> <span class="k">for</span>
+<span class="n">basecase</span>
+<span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">successful</span> <span class="n">proof</span> <span class="n">by</span> <span class="n">k</span><span class="o">-</span><span class="n">induction</span><span class="p">.</span>
+<span class="o">**</span><span class="n">SBY</span> <span class="mh">15</span><span class="o">:</span><span class="mh">51</span><span class="o">:</span><span class="mh">17</span> <span class="p">[</span><span class="n">top</span><span class="p">]</span> <span class="n">DONE</span> <span class="p">(</span><span class="n">PASS</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="mh">0</span><span class="p">)</span><span class="o">**</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3.3. Results of running sby -f axi_tvalid.sby prove with the
+erroneous design.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The reason the proof fails is because first_point was set to 0
+regardless of the state of ARESETn; therefore, TVALID_condition is never
+triggered (it is vacuous) and it always passes regardless of the logic
+driving TVALID_nxt.</p>
+<p>We choose to use a witness to confirm the condition is being covered.
+The following modifications are added to the design:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="no">`ifdef</span> <span class="n">FORMAL</span>
+   <span class="nl">TVALID_condition:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="n">first_point</span> <span class="o">|-&gt;</span> <span class="o">!</span><span class="n">TVALID_nxt</span><span class="p">);</span>
+   <span class="nl">TVALID_witness:</span>   <span class="k">cover</span> <span class="k">property</span> <span class="p">(@(</span><span class="k">posedge</span> <span class="n">ACLK</span><span class="p">)</span> <span class="n">first_point</span> <span class="p">##</span><span class="mh">0</span> <span class="o">!</span><span class="n">TVALID_nxt</span><span class="p">);</span>
+<span class="no">`endif</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3.4 Line TVALID_witness is introduced into the formal proof
+for this design. Execute sby -f axi_tvalid.sby witness and the
+witness cover will fail, successfully detecting the problem
+introduced in first_point logic.</p></td>
+</tr>
+</tbody>
+</table>
+<p>From this example, an SBY recipe can be derived that adds an extra task
+named <strong>witness</strong> to detect vacuous results. The Figure 3.5 shows this
+SBY recipe.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tasks</span><span class="p">]</span>
+<span class="n">prove</span>
+<span class="n">witness</span>
+
+<span class="p">[</span><span class="n">options</span><span class="p">]</span>
+<span class="nl">prove:</span> <span class="n">mode</span> <span class="n">prove</span>
+<span class="nl">witness:</span> <span class="n">mode</span> <span class="k">cover</span>
+<span class="p">[</span><span class="n">engines</span><span class="p">]</span>
+<span class="n">smtbmc</span>
+
+<span class="p">[</span><span class="n">script</span><span class="p">]</span>
+<span class="p">#</span> <span class="n">Synthesis</span> <span class="n">Script</span><span class="p">,</span> <span class="n">replace</span> <span class="n">it</span> <span class="k">with</span> <span class="n">your</span> <span class="n">files</span><span class="o">/</span><span class="n">RTL</span>
+<span class="n">read</span> <span class="o">-</span><span class="n">define</span> <span class="n">FORMAL</span>
+<span class="n">read</span> <span class="o">-</span><span class="n">sv</span> <span class="n">axi_tvalid</span><span class="p">.</span><span class="n">sv</span>
+<span class="n">prep</span> <span class="o">-</span><span class="n">top</span> <span class="n">axi4_tvalid</span>
+
+<span class="p">[</span><span class="n">files</span><span class="p">]</span>
+<span class="n">axi_tvalid</span><span class="p">.</span><span class="n">sv</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3.5. Introducing the witness task and its corresponding
+options in the SBY file.</p></td>
+</tr>
+</tbody>
+</table>
+<p>As explained before, the assertion will not trigger because it was
+disabled by the bug, so even though the assertion passes, the witness
+task can be launched to confirm the relevance of the assertion result.
+If the witness check results in a negative (unreachable) answer, which
+we see that it does in Figure 3.6, then there’s a problem that needs to
+be fixed.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Checking</span>
+<span class="k">cover</span> <span class="n">reachability</span> <span class="n">in</span> <span class="n">step</span> <span class="mf">16.</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Checking</span>
+<span class="k">cover</span> <span class="n">reachability</span> <span class="n">in</span> <span class="n">step</span> <span class="mf">17.</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Checking</span>
+<span class="k">cover</span> <span class="n">reachability</span> <span class="n">in</span> <span class="n">step</span> <span class="mf">18.</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Checking</span>
+<span class="k">cover</span> <span class="n">reachability</span> <span class="n">in</span> <span class="n">step</span> <span class="mf">19.</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Unreached</span>
+<span class="k">cover</span> <span class="n">statement</span> <span class="n">at</span> <span class="n">TVALID_witness</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="nl">Status:</span>
+<span class="n">failed</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="n">finished</span> <span class="p">(</span><span class="n">returncode</span><span class="o">=</span><span class="mh">1</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="n">Status</span> <span class="n">returned</span> <span class="n">by</span>
+<span class="nl">engine:</span> <span class="n">FAIL</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">clock</span> <span class="k">time</span>
+<span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span> <span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">process</span> <span class="k">time</span>
+<span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span> <span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">engine_0</span> <span class="p">(</span><span class="n">smtbmc</span><span class="p">)</span>
+<span class="n">returned</span> <span class="n">FAIL</span>
+<span class="o">**</span><span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="p">[</span><span class="n">axi_tvalid_witness</span><span class="p">]</span> <span class="n">DONE</span> <span class="p">(</span><span class="n">FAIL</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="mh">2</span><span class="p">)</span><span class="o">**</span>
+<span class="n">SBY</span> <span class="mh">11</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">56</span> <span class="n">One</span> <span class="k">or</span> <span class="n">more</span> <span class="n">tasks</span> <span class="n">produced</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">zero</span> <span class="k">return</span> <span class="n">code</span><span class="p">.</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3.6. Results of running sby -f axi_tvalid.sby witness,
+indicating a failure.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="case-study-ii-amba-5-chi-link-fsm">
+<h4>Case Study II - AMBA 5 CHI Link FSM<a class="headerlink" href="#case-study-ii-amba-5-chi-link-fsm" title="Permalink to this headline">¶</a></h4>
+<p>Consider the <a class="reference external" href="https://developer.arm.com/documentation/ihi0050/c">AMBA 5
+CHI</a> FSM shown in
+Figure 13-6 of Section “13.6.3 Expected transitions” that is shown
+below. This expected state transition path is described in the AMBA 5
+CHI specification as “Table 13-4 Stop/Stop to Run/Run state paths”.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image2.png"><img alt="_images/image2.png" class="align-center" src="_images/image2.png" style="width: 6.32in; height: 5.12in;" /></a>
+</th>
+</tr>
+<tr class="row-even"><th class="head"></th>
+</tr>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image5.png"><img alt="_images/image5.png" class="align-center" src="_images/image5.png" style="width: 4.74in; height: 1in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.1 Graphical description of the AMBA 5 CHI link FSM states
+and relationships.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The objective is to test a module that should accomplish the transition
+shown in <strong>Path 1</strong> (see Figure 4.1). To achieve this goal, two modules
+are provided to verify the expected path transition: A simple module
+<strong>test</strong> that drives the input Tx/Rx pairs of the module
+<strong>amba5_chi_link_fsm</strong>, a module that implements the AMBA 5 CHI link FSM
+as shown in Figure 4.1. The architectural view of this example is shown
+in Figure 4.2.</p>
+<p><strong>Note:</strong> The RTL of the <strong>amba5_chi_link_fsm</strong> is large, therefore is
+not shown in the document. However, it is suggested to open the file and
+analyse it while reading the next part of this appnote.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image8.png"><img alt="_images/image8.png" class="align-center" src="_images/image8.png" style="width: 5.69in; height: 5.71in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.2. Block architecture view of the AMBA 5 CHI test
+environment. The gray box shows the FSM implementation of module
+<strong>amba5_chi_link_fsm</strong>. The purple box shows the inputs that are
+programmed in a small FSM implemented by the <strong>test</strong> module.
+Finally, the red box shows expected results encoded as a set of FPV
+properties. This last block can be considered as an FPV checker.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The following requirements needs to hold in the design:</p>
+<ol class="arabic simple">
+<li><p>A property that ensures that the design cannot transit to a banned output (shown in red boxes in the Figure 4.2).</p></li>
+<li><p>A property that ensures that the <strong>Path 1</strong> shown in table 13-4 is reached correctly with the current sequence of inputs provided by the <strong>test</strong> module.</p></li>
+<li><p>A property that ensures that the first transition (TxStop/RxStop -&gt; TxStop/RxAct) is correct.</p></li>
+</ol>
+<p>The Table 4.1 shows the encoding of such properties. Note how the
+properties are using weak unbounded sequences (a ##[+] b).</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="nl">ap_banned_output:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="o">|-&gt;</span> <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">banned_output</span><span class="p">);</span>
+   <span class="nl">ap_completed_path:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="o">|-&gt;</span> <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">completed_path</span><span class="p">);</span>
+   <span class="nl">ap_initial_path:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">txlinkactivereq</span> <span class="o">||</span> <span class="n">rxlinkactivereq</span><span class="p">)</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Table 4.1. Properties ap_banned_output and ap_completed_path are
+using weak unbounded sequences.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Three bugs are hidden in the design, and yet the properties are passing.
+To verify and debug that problem, the following witness shown in the
+Table 4.2 are attached to the design as well:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span>   <span class="nl">wp_banned_output:</span> <span class="k">cover</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span>  <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">banned_output</span><span class="p">);</span>
+   <span class="nl">wp_completed_path:</span> <span class="k">cover</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">completed_path</span><span class="p">);</span>
+   <span class="nl">wp_initial_path:</span> <span class="k">cover</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">txlinkactivereq</span> <span class="o">||</span> <span class="n">rxlinkactivereq</span><span class="p">)</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Table 4.2. Related witnesses added to the properties of Table 4.1.</p></td>
+</tr>
+</tbody>
+</table>
+<p>By running SBY in in prove mode, all properties are passing as shown in
+Figure 4.3:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="n">engine_0</span><span class="p">.</span><span class="nl">basecase:</span> <span class="n">finished</span> <span class="p">(</span><span class="n">returncode</span><span class="o">=</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="n">Status</span> <span class="n">returned</span> <span class="n">by</span> <span class="n">engine</span> <span class="k">for</span>
+<span class="nl">basecase:</span> <span class="n">pass</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">clock</span> <span class="k">time</span> <span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span>
+<span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">Elapsed</span> <span class="n">process</span> <span class="k">time</span> <span class="p">[</span><span class="nl">H:MM:</span><span class="n">SS</span>
+<span class="p">(</span><span class="n">secs</span><span class="p">)]</span><span class="o">:</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="p">(</span><span class="mh">0</span><span class="p">)</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">engine_0</span> <span class="p">(</span><span class="n">smtbmc</span><span class="p">)</span> <span class="n">returned</span> <span class="n">pass</span>
+<span class="k">for</span> <span class="n">induction</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">engine_0</span> <span class="p">(</span><span class="n">smtbmc</span><span class="p">)</span> <span class="n">returned</span> <span class="n">pass</span>
+<span class="k">for</span> <span class="n">basecase</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="nl">summary:</span> <span class="n">successful</span> <span class="n">proof</span> <span class="n">by</span> <span class="n">k</span><span class="o">-</span><span class="n">induction</span><span class="p">.</span>
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">49</span><span class="o">:</span><span class="mh">44</span> <span class="p">[</span><span class="n">test_prove</span><span class="p">]</span> <span class="n">DONE</span> <span class="p">(</span><span class="n">PASS</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="mh">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.3. All properties are passing at the very first run of FPV.
+That does not give much information back, and some engineers with no
+prior experience in FPV may think the design is bug free. But is
+that the case?. Execute <strong>sby -f amba5_chi_link_fsm.sby prove</strong> and
+all assertions will pass.</p></td>
+</tr>
+</tbody>
+</table>
+<p>But, when checking with the witnesses tasks, they reveal some important
+problems:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">58</span><span class="o">:</span><span class="mh">34</span> <span class="p">[</span><span class="n">test_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Reached</span> <span class="k">cover</span>
+<span class="n">statement</span> <span class="n">at</span> <span class="n">wp_initial_path</span> <span class="n">in</span> <span class="n">step</span> <span class="mf">2.</span>
+
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">58</span><span class="o">:</span><span class="mh">34</span> <span class="p">[</span><span class="n">test_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Unreached</span> <span class="k">cover</span>
+<span class="n">statement</span> <span class="n">at</span> <span class="n">wp_completed_path</span><span class="p">.</span>
+
+<span class="n">SBY</span> <span class="mh">17</span><span class="o">:</span><span class="mh">58</span><span class="o">:</span><span class="mh">34</span> <span class="p">[</span><span class="n">test_witness</span><span class="p">]</span> <span class="nl">engine_0:</span> <span class="p">##</span> <span class="mh">0</span><span class="o">:</span><span class="mh">00</span><span class="o">:</span><span class="mh">00</span> <span class="n">Unreached</span> <span class="k">cover</span>
+<span class="n">statement</span> <span class="n">at</span> <span class="n">wp_banned_output</span><span class="p">.</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.4. Of three assertions, only one got both assert and
+witness success match, for the witness of the other two, the
+conditions are not reachable. Execute <strong>sby -f
+amba5_chi_link_fsm.sby witness</strong> to get this result.</p></td>
+</tr>
+</tbody>
+</table>
+<p>As Figure 1.9 of Section Methodology suggests, further analysis is
+needed to generate a conclusion and/or fix the problems in the RTL. The
+following sections show how to debug the results obtained by the witness
+cover.</p>
+</div>
+<div class="section" id="unreached-witness-analysis">
+<h4>Unreached Witness Analysis<a class="headerlink" href="#unreached-witness-analysis" title="Permalink to this headline">¶</a></h4>
+<p>After analysing the failure of property ap_banned_output: “A property
+that ensures that the design cannot transition to a banned output (shown
+in red boxes in the Figure 4.2)” with the witness cover, it can be seen
+that a set of banned transitions are not yet implemented in the design.
+This property can be enclosed in compiler directives to disable the
+check until the logic for banned output transition is added, and then
+the user can enable back the property.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span> <span class="no">`ifdef</span> <span class="n">BANNED</span>
+   <span class="c1">// for this bug, this path is not implemented and the controller does not execute the paths to transition to that state</span>
+   <span class="k">assign</span> <span class="n">banned_output</span> <span class="o">=</span> <span class="n">fsm_lnk_ps</span><span class="p">.</span><span class="n">chi_tx_t</span> <span class="o">==</span> <span class="n">TxStop</span> <span class="o">&amp;&amp;</span> <span class="n">fsm_lnk_ps</span><span class="p">.</span><span class="n">chi_rx_t</span> <span class="o">==</span> <span class="n">RxRunp</span><span class="p">;</span>
+   <span class="nl">ap_banned_output:</span> <span class="k">assert</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="o">|-&gt;</span> <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">banned_output</span><span class="p">);</span>
+   <span class="nl">wp_banned_output:</span> <span class="k">cover</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span>  <span class="p">##[</span><span class="o">+</span><span class="p">]</span> <span class="n">banned_output</span><span class="p">);</span>
+ <span class="no">`else</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.5. If RTL is not implemented yet, it can be enclosed in
+compiler directives while the responsible engineer of this module
+finishes the implementation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="debugging-unreached-witness">
+<h4>Debugging Unreached Witness<a class="headerlink" href="#debugging-unreached-witness" title="Permalink to this headline">¶</a></h4>
+<p>For the failure in the witness of the property ap_completed_path: “A
+property that ensures that the path 1 shown in table 13-4 is reached
+correctly with the current set of options”, the failure is a little more
+complicated. This witness is not reachable, and the assertion is proven,
+therefore there’s no information in this case of why this is failing.
+Moreover, if the engineer used the weak precondition cover instead of
+the witness, this problem would have been undetected making it more
+difficult to debug.</p>
+<p>To root-cause this scenario, the elegant solution is to convert the weak
+sequence to a strong one, or opt to calculate the latency from the
+initial state to some interesting point of the design and see what is
+happening. In other words, by modifying the witness sequence, an
+evidence of the design behaviour can be obtained. The problem can be
+understood with this evidence.</p>
+<p>The design takes 4 clock cycles to travel from s1 to stop. The witness
+of the behaviour can be then encoded as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="nl">we_completed_path:</span> <span class="k">cover</span> <span class="k">property</span> <span class="p">(</span><span class="n">initial_current_state</span> <span class="p">##</span><span class="mh">4</span> <span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">);</span>
+</pre></div>
+</div>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.6. The initial_current_state sequence is concatenated to
+whatever comes after 5 clock cycles, to have evidence of the design
+behavior. The same method can be applied to extend traces obtained
+by the FPV tool, by increasing the cycles of the delay.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The second witness shows that due the sum of all problems with
+incorrectly driven inputs and the nature of the weak unbounded sequence,
+the FSM can transition to an unexpected state as shown below:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 38%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Current state</strong></p></th>
+<th class="head"><p><strong>Inputs</strong></p></th>
+<th class="head"><p><strong>Next state</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>TxStop/RxStop (smt_step
+0)</p></td>
+<td><p>All 0</p></td>
+<td><p>TxStop/RxStop</p></td>
+</tr>
+<tr class="row-odd"><td><p>TxStop/RxStop (smt_step
+1)</p></td>
+<td><p>txlinkactivereq,
+rxlinkactivereq =
+2’b11, rest 0</p></td>
+<td><p>TxAct/RxAct</p></td>
+</tr>
+<tr class="row-even"><td><p>TxAct/RxAct (smt_step
+2)</p></td>
+<td><p>txlinkactiveack = 1’b1,
+rest 0</p></td>
+<td><p>TxRun/RxAct</p></td>
+</tr>
+<tr class="row-odd"><td><p>TxRun/RxAct (smt_step
+3)</p></td>
+<td><p>All 0</p></td>
+<td><p>TxRun/RxAct</p></td>
+</tr>
+</tbody>
+</table>
+<p>The following image helps to correlate with the table of above. This
+trace is generated from the second witness we_completed_path.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><a class="reference internal image-reference" href="_images/image1.png"><img alt="_images/image1.png" class="align-center" src="_images/image1.png" style="width: 6.35in; height: 2.42in;" /></a>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.7. Witness evidence of the design behavior generated by
+we_completed_path.</p></td>
+</tr>
+</tbody>
+</table>
+<p>But if the precondition <em>current_state</em> is enabled and the consequent is
+false, why did the property not fail?. Because the weak unbounded
+sequence (##[+]) does not witness the inability of the precondition
+<em>completed_path</em> to happen during the test (the test consists of four
+states that cannot be expanded further, if no issue is witnessed during
+all runs, a weak sequence results in a true value therefore not
+falsifying the consequent).</p>
+<p>The witness cover is a stronger version of the property
+ap_completed_path as the consequent <em>completed_path</em> needs to be covered
+in any of the reachable states of the model. For the property without
+using a witness to be able to detect the unreached consequent, it should
+use a strong unbounded sequence, but this will convert the property to a
+liveness type. A suggested and simple approach to take instead is to
+continue with the safety nature of the property, and analyse the
+microarchitecture to define the expected delay instead of using the
+unbounded version as done with we_completed_path. This is an example of
+why using witness can help to debug complex issues.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>ap_completed_path: assert property (initial_current_state |-&gt; ##4
+completed_path;</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.8. Refining the delay of the behavior needed for a
+property, to replace an unbounded sequence.</p></td>
+</tr>
+</tbody>
+</table>
+<p>To fix this, the following modification to <strong>s3</strong> is needed, along with
+solving the last problem presented by ap_completed_path witness.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>s3: begin {txlinkactiveack, rxlinkactivereq} = 2’b11; ns = s4; end
+// TxAct/RxRun</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.9. Part of the fix of this issue, there is still one
+problem to fix.</p></td>
+</tr>
+</tbody>
+</table>
+<p>For the unreached witness of ap_completed_path: “A property that ensures
+that the first transition (TxStop/RxStop -&gt; TxStop/RxAct) is correct”,
+it is expected that rxlinkactivereq is asserted and txlinkactivereq is
+deasserted in state s1 of the controller for the FSM to be able to
+transition from TxStop/RxStop to TxStop/RxAct. Since the inputs are not
+set, and the default values of unset inputs are 0 by the implementation,
+the precondition of the property is equivalent to <em>initial_current_state
+&amp;&amp; (1’b0 || 1’b0),</em> which evaluates to 0, making this property pass
+vacuously.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>always_comb begin</p>
+<p>ns = ps;</p>
+<p>rxlinkactivereq = 1’b0;</p>
+<p>txlinkactivereq = 1’b0;</p>
+<p>txlinkactiveack = 1’b0;</p>
+<p>rxlinkactiveack = 1’b0;</p>
+<p>case (ps)</p>
+<p>s1: begin ns = s2; end //TxStop/RxStop</p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4.9. A problem in the <strong>test</strong> module that makes a property
+pass vacuously.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Solutions to all problems are provided in the files
+<strong>amba5_chi_link_fsm_solution.sby</strong> and
+<strong>amba5_chi_link_fsm_solution.sv</strong>. Execute sby -f
+amba5_chi_link_fsm_solution.sby and both tasks will pass successfully
+now.</p>
+<p>Final Remarks</p>
+<ul class="simple">
+<li><p>For future releases of Yosys HQ, the weak precondition cover extraction will be done automatically, and the witness extraction will be possible to enable by default.</p></li>
+<li><p>In this app note, all the assertions are <strong>inlined</strong>. In a future application note the assertions will be attached to a module using a <strong>bind</strong> SystemVerilog construct.</p></li>
+</ul>
+<p>Special thanks to the notes pointed out by the [R]eviewers/[C]ontributors:</p>
+<p>Matt Venn [R], Tudor Timi [C], Samuel Falvo [R], Claire Xen [C], Yosys HQ team [R].</p>
+<dl class="footnote brackets">
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>A vacuous pass means that the property does not check the intended
+behavior and the tool will never find a violation regardless of the
+logic that drives this specific implementation.</p>
+</dd>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>Some solvers or engines guarantee that the CEX found is the shortest
+possible, whereas other engines are aimed to reach deep states of the
+design usually hard to reach with conventional solvers. For example,
+bug hunting engines perform deep search in the design space to find
+CEXs that can be hundreds of cycles long. But usually, the FPV tool
+is configured with an engine that finds CEX of minimal length
+possible.</p>
+</dd>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
+<dd><p>A low formal coverage metric (such as mutation coverage) can mean
+that some properties have vacuous results (or are trivially proven).
+Coverage does not provide debug capabilities, it just shows that
+there exist some uncovered structures in the design that needs
+attention.</p>
+</dd>
+<dt class="label" id="id9"><span class="brackets"><a class="fn-backref" href="#id4">4</a></span></dt>
+<dd><p>“There are three forms of a sequence property: <em>sequence_expr</em>,
+<strong>weak</strong><em>(sequence_expr)</em> and
+<strong>strong</strong><em>(sequence_expr).</em> A <strong>weak</strong>(<em>sequence_expr</em>)
+sequence property evaluates to true if and only if, there is not a
+finite prefix that witnesses inability to match <em>sequence_expr”</em>.
+From IEEE 1800-2012, <strong>Section 16.12.1 Sequence Property</strong>.</p>
+</dd>
+<dt class="label" id="id10"><span class="brackets"><a class="fn-backref" href="#id5">5</a></span></dt>
+<dd><p><em>Safety properties</em> are the prefered types of properties tested in
+FPV. They stipulate that something bad does not happen, and they have
+finite counterexamples because any path to a bad state is finite.
+Conversely, a <em>liveness property</em> stipulates that a good thing
+<strong>eventually</strong> happens, and they have infinite counterexamples. To
+check <em>liveness</em> properties, the tool must find finite cycles in the
+RTL model that do not satisfy the property, and usually a fairness
+obligation assumption is needed to help the tool during the
+<em>liveness</em> resolution. Is for this reason that <em>liveness</em> properties
+may not be efficient for FPV and they should be used when is
+absolutely necessary.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

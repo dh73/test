@@ -1,0 +1,17 @@
+# SBY configuration file
+[options]
+mode bmc
+# ERROR:
+# This is clearly an insufficient 
+# bound and the witness will 
+# evidentiate this as an 
+# unreachable statement.
+depth 14
+---
+# FIX:
+# Increasing the bound will enable 
+# the solver to reach the expected 
+# scenario. The witness will 
+# evidentiate this as a 
+# reachable statement.
+depth 24

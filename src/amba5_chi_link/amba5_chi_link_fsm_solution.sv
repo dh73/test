@@ -102,7 +102,7 @@ module amba5_chi_link_fsm
    logic completed_path;
    
  `ifdef BANNED
-   // for this bug1, this path is not implemented and the controller does not execute the paths to transition to that state
+   // for this bug, this path is not implemented and the controller does not execute the paths to transition to that state
    assign banned_output = fsm_lnk_ps.chi_tx_t == TxStop && fsm_lnk_ps.chi_rx_t == RxRunp;
    ap_banned_output: assert property (initial_current_state |-> ##[+] banned_output);
    wp_banned_output: cover property (initial_current_state  ##[+] banned_output);

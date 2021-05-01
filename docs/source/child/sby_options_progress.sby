@@ -1,0 +1,4 @@
+# SBY configuration file
+[options]
+mode bmc
+depth 14

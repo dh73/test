@@ -13,9 +13,10 @@ module sandbox0
 `ifdef FORMAL
    default clocking fpv_clk @(posedge clk); endclocking
    default disable iff (!rstn);
-   restrict_val: assume property (key < 8'h83);
-   unlock_test:  assert property (key[7] && !key[5] && key[2] && !key[0] |-> ##1 unlock);
-   witness:      cover  property (key[7] && !key[5] && key[2] && !key[0] ##1 unlock);
+   restrict_val: assume property(key < 8'h83);
+   unlock_test:  assert property(key[7] && !key[5] && key[2] && !key[0] |-> ##1 unlock);
+   s_weak:       cover  property(key[7] && !key[5] && key[2] && !key[0]);
+   witness:      cover  property(key[7] && !key[5] && key[2] && !key[0] ##1 unlock);
 `endif
 endmodule // sandbox0
 
@@ -31,7 +32,10 @@ module sandbox1
    assign delayed_rst = sreg[1];
 `ifdef FORMAL
    default clocking fpv_clk @(posedge clk); endclocking
+   // Disable the check if the design is in reset state
    default disable iff (!rstn);
+   /* This can be used as well, since the reset is
+    * synchronous: default disable iff($(sampled(!rstn))); */
    delayed_reset: assert property (!rstn |-> ##2 delayed_rst);
    witness:       cover  property (!rstn ##2 delayed_rst);
 `endif
